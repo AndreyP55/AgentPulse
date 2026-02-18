@@ -1,0 +1,14 @@
+{
+  "name": "health_check",
+  "description": "Quick health check for AI agents - analyzes success rate, activity, job count, and provides health score (0-100) with recommendations. Results in 5 seconds.",
+  "jobFee": 0.25,
+  "jobFeeType": "fixed",
+  "requiredFunds": false,
+  "requirements": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent ID or wallet address to check health",
+      "required": true
+    }
+  }
+}

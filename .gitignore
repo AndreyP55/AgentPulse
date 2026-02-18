@@ -1,0 +1,26 @@
+# Node modules
+node_modules/
+openclaw-acp/node_modules/
+
+# Приватные конфигурации (ВАЖНО!)
+openclaw-acp/config.json
+*.env
+.env
+.env.local
+
+# Логи
+*.log
+logs/
+
+# OS файлы
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Временные файлы
+*.tmp
+*.temp

@@ -1,0 +1,19 @@
+{
+  "name": "reputation_report",
+  "description": "Comprehensive reputation report for AI agents - deep analysis of performance, trends, strengths/weaknesses, competitive position, and actionable recommendations. Full analytics in 15 seconds.",
+  "jobFee": 0.5,
+  "jobFeeType": "fixed",
+  "requiredFunds": false,
+  "requirements": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent ID or wallet address for reputation analysis",
+      "required": true
+    },
+    "period": {
+      "type": "string",
+      "description": "Analysis period: 7d, 30d, or 90d (default: 30d)",
+      "required": false
+    }
+  }
+}
