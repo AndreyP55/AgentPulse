@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: "Real-time performance monitoring and health diagnostics for AI agents on Virtuals Protocol. Independent audits in 30 seconds.",
   keywords: ["AI agents", "Virtuals Protocol", "ACP", "agent monitoring", "health check", "reputation", "audit"],
   other: {
-    'virtual-protocol-site-verification': 'a3b8b16f625ee76d65a9a27e12f78f13',
+    'virtual-protocol-site-verification': 'a5b0b16f625ee76d65a9a27e12f78f13',
   },
 };
 
