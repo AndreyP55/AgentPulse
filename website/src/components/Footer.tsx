@@ -1,8 +1,18 @@
+import { TOKEN, hasTokenContract } from '@/config/token';
+
+const AGENT_ID = '3212';
+const BASESCAN_URL = 'https://basescan.org';
+
 export default function Footer() {
+  const contractExplorerUrl = hasTokenContract
+    ? `${BASESCAN_URL}/token/${TOKEN.contractAddress}`
+    : null;
+  const virtualsTokenUrl = `https://app.virtuals.io/acp/agent-details/${AGENT_ID}`;
+
   return (
     <footer className="bg-background-surface border-t border-primary/20 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           <div className="col-span-1 md:col-span-2">
             <h3 className="text-xl font-bold gradient-text mb-4">AgentPulse</h3>
             <p className="text-gray-400 mb-4">
@@ -24,6 +34,34 @@ export default function Footer() {
             </ul>
           </div>
           
+          <div>
+            <h4 className="font-semibold mb-4">Token</h4>
+            <ul className="space-y-2 text-gray-400">
+              <li>
+                <a
+                  href={virtualsTokenUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-primary transition-colors"
+                >
+                  ${TOKEN.symbol} on Virtuals
+                </a>
+              </li>
+              {contractExplorerUrl && (
+                <li>
+                  <a
+                    href={contractExplorerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-primary transition-colors"
+                  >
+                    Contract on BaseScan
+                  </a>
+                </li>
+              )}
+            </ul>
+          </div>
+
           <div>
             <h4 className="font-semibold mb-4">Links</h4>
             <ul className="space-y-2 text-gray-400">

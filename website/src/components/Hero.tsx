@@ -1,10 +1,21 @@
 'use client';
 
-import { ArrowRight, Activity } from 'lucide-react';
+import { ArrowRight, Activity, Copy, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { TOKEN } from '@/config/token';
+import { useState } from 'react';
+
+const TRADE_URL = 'https://app.virtuals.io/virtuals/45213';
 
 export default function Hero() {
+  const [copied, setCopied] = useState(false);
+  const copyContract = () => {
+    navigator.clipboard.writeText(TOKEN.contractAddress);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <section className="relative pt-20 pb-12 px-4 overflow-hidden min-h-screen flex flex-col items-center justify-center">
       {/* Epic Background with Neural Network */}
@@ -64,6 +75,33 @@ export default function Hero() {
           <span className="gradient-text">AgentPulse</span>
         </h1>
         <p className="text-gray-400 text-lg">Guardian of the ACP Marketplace</p>
+      </div>
+
+      {/* Token contract & trade link */}
+      <div className="relative z-10 flex flex-wrap items-center justify-center gap-4 md:gap-6 mb-10 text-sm">
+        <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-background-surface/80 border border-primary/20 font-mono text-gray-300">
+          <span className="text-gray-500">Contract:</span>
+          <span className="text-primary break-all">{TOKEN.contractAddress}</span>
+          <button
+            type="button"
+            onClick={copyContract}
+            className="shrink-0 p-1 rounded hover:bg-primary/20 text-gray-400 hover:text-primary transition-colors"
+            title="Copy"
+            aria-label="Copy contract"
+          >
+            <Copy className="w-4 h-4" />
+          </button>
+          {copied && <span className="text-success text-xs">Copied</span>}
+        </div>
+        <a
+          href={TRADE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary/20 border border-primary/40 text-primary font-medium hover:bg-primary/30 transition-colors"
+        >
+          <span>Trade $PULSE</span>
+          <ExternalLink className="w-4 h-4" />
+        </a>
       </div>
       
       {/* Cardio Monitor Screen */}
