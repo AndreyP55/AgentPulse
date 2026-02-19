@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-white antialiased;
+    background-image: 
+      radial-gradient(circle at 20% 30%, rgba(0, 217, 255, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.03) 0%, transparent 50%);
+    position: relative;
+    overflow-x: hidden;
+  }
+  
+  /* Realistic ECG heartbeat pattern - Layer 1 */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg width='1200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='ecg1' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' style='stop-color:rgb(0,217,255);stop-opacity:0.2' /%3E%3Cstop offset='50%25' style='stop-color:rgb(168,85,247);stop-opacity:0.25' /%3E%3Cstop offset='100%25' style='stop-color:rgb(0,217,255);stop-opacity:0.2' /%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0,100 L180,100 L185,98 L190,95 L195,85 L200,60 L205,30 L210,70 L215,95 L220,102 L225,100 L230,100 L420,100 L425,98 L430,95 L435,85 L440,60 L445,30 L450,70 L455,95 L460,102 L465,100 L470,100 L660,100 L665,98 L670,95 L675,85 L680,60 L685,30 L690,70 L695,95 L700,102 L705,100 L710,100 L900,100 L905,98 L910,95 L915,85 L920,60 L925,30 L930,70 L935,95 L940,102 L945,100 L950,100 L1140,100 L1145,98 L1150,95 L1155,85 L1160,60 L1165,30 L1170,70 L1175,95 L1180,102 L1185,100 L1200,100' stroke='url(%23ecg1)' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round' /%3E%3C/svg%3E");
+    background-size: 1200px 200px;
+    background-repeat: repeat-x;
+    background-position: 0 15%;
+    opacity: 0.6;
+    animation: ecg-scroll 8s linear infinite;
+  }
+  
+  /* Realistic ECG heartbeat pattern - Layer 2 (offset) */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg width='1200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='ecg2' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' style='stop-color:rgb(168,85,247);stop-opacity:0.15' /%3E%3Cstop offset='50%25' style='stop-color:rgb(0,217,255);stop-opacity:0.2' /%3E%3Cstop offset='100%25' style='stop-color:rgb(168,85,247);stop-opacity:0.15' /%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0,100 L180,100 L185,98 L190,95 L195,85 L200,60 L205,30 L210,70 L215,95 L220,102 L225,100 L230,100 L420,100 L425,98 L430,95 L435,85 L440,60 L445,30 L450,70 L455,95 L460,102 L465,100 L470,100 L660,100 L665,98 L670,95 L675,85 L680,60 L685,30 L690,70 L695,95 L700,102 L705,100 L710,100 L900,100 L905,98 L910,95 L915,85 L920,60 L925,30 L930,70 L935,95 L940,102 L945,100 L950,100 L1140,100 L1145,98 L1150,95 L1155,85 L1160,60 L1165,30 L1170,70 L1175,95 L1180,102 L1185,100 L1200,100' stroke='url(%23ecg2)' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round' /%3E%3C/svg%3E");
+    background-size: 1200px 200px;
+    background-repeat: repeat-x;
+    background-position: 0 50%;
+    opacity: 0.5;
+    animation: ecg-scroll 8s linear infinite;
+    animation-delay: -4s;
+  }
+}
+
+@keyframes scan-vertical {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes scan-horizontal {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100vw); }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+}
+
+@keyframes ecg-scroll {
+  0% {
+    background-position-x: 0;
+  }
+  100% {
+    background-position-x: 1200px;
+  }
+}
+
+@layer utilities {
+  .glow-cyan {
+    box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+  }
+  
+  .glow-purple {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+  }
+  
+  .glow-success {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+  }
+  
+  .glow-danger {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+  }
+  
+  .gradient-border {
+    border: 1px solid transparent;
+    background: linear-gradient(#1A1F2E, #1A1F2E) padding-box,
+                linear-gradient(135deg, #00D9FF, #A855F7) border-box;
+  }
+  
+  .gradient-text {
+    background: linear-gradient(135deg, #00D9FF, #A855F7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
