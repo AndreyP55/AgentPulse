@@ -223,7 +223,7 @@ export default function Hero() {
           Real-time health diagnostics and performance monitoring for AI agents
         </p>
         <p className="text-gray-500 text-sm italic">
-          "The Doctor for AI Agents in the Virtuals Ecosystem"
+          &quot;The Doctor for AI Agents in the Virtuals Ecosystem&quot;
         </p>
       </div>
     </section>
