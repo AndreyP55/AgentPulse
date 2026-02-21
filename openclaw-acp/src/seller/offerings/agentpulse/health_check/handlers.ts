@@ -1,6 +1,6 @@
 /**
  * AgentPulse - Health Check Offering
- * Price: 0.25 USDC
+ * Price: 25 USDC
  * 
  * Quick health check for AI agents on Virtuals Protocol.
  * Analyzes success rate, activity, jobs completed, and provides health score.
@@ -8,15 +8,18 @@
 
 import type { ExecuteJobResult, ValidationResult } from "../../../runtime/offeringTypes.js";
 import { fetchAgentMetrics, estimateLastActivity } from "../shared/agdp-client.js";
+import { sendResultToWebhook } from "../shared/webhook.js";
 
 interface AgentData {
   agentId: string;
+  agentName: string;
   successRate: number;
   jobsCompleted: number;
   lastJobTimestamp: number | null;
   revenue: number;
   offerings: number;
   rank: number | null;
+  uniqueBuyers: number;
 }
 
 /**
@@ -27,12 +30,14 @@ async function fetchAgentData(agentId: string): Promise<AgentData> {
   
   return {
     agentId: metrics.agentId,
+    agentName: metrics.agentName,
     successRate: metrics.successRate,
     jobsCompleted: metrics.jobsCompleted,
     lastJobTimestamp: metrics.lastJobTimestamp || estimateLastActivity(metrics.jobsCompleted),
     revenue: metrics.revenue,
     offerings: metrics.offerings.length,
-    rank: metrics.rank
+    rank: metrics.rank,
+    uniqueBuyers: metrics.uniqueBuyers
   };
 }
 
@@ -132,12 +137,13 @@ function generateRecommendations(data: AgentData, score: number): string[] {
 /**
  * Main execution function
  */
-export async function executeJob(requirements: any): Promise<ExecuteJobResult> {
+export async function executeJob(requirements: any, context?: any): Promise<ExecuteJobResult> {
   console.log('[Health Check] Starting health check...');
   console.log('[Health Check] Requirements:', requirements);
   
   // Support both naming conventions
   const agentId = requirements.agent_id || requirements.agentId;
+  const jobId = context?.jobId;
   
   if (!agentId) {
     throw new Error('agent_id is required');
@@ -183,7 +189,33 @@ export async function executeJob(requirements: any): Promise<ExecuteJobResult> {
     console.log('[Health Check] Health Score:', healthScore);
     console.log('[Health Check] Status:', status);
     
-    return { deliverable: result };
+    // Send to webhook (non-blocking)
+    sendResultToWebhook({
+      jobId: jobId,
+      agentId: agentData.agentId,
+      agentName: agentData.agentName,
+      service: 'Health Check',
+      price: 25,
+      score: healthScore,
+      status: status,
+      metrics: {
+        successRate: agentData.successRate,
+        jobsCompleted: agentData.jobsCompleted,
+        revenue: agentData.revenue,
+        rank: agentData.rank ?? undefined,
+        uniqueBuyers: agentData.uniqueBuyers ?? undefined
+      },
+      recommendations: recommendations
+    }).catch(err => 
+      console.log('[Health Check] Webhook error (non-critical):', err.message)
+    );
+    
+    return { 
+      deliverable: {
+        type: 'health_check_result',
+        value: result
+      }
+    };
     
   } catch (error: any) {
     console.error('[Health Check] Error:', error);
@@ -220,5 +252,5 @@ export function validateRequirements(requirements: any): ValidationResult {
  */
 export function requestPayment(requirements: any): string {
   const agentId = requirements.agent_id || requirements.agentId;
-  return `Health check requested for agent ${agentId} - 0.25 USDC`;
+  return `Health check requested for agent ${agentId} - 25 USDC`;
 }
