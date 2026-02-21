@@ -1,7 +1,7 @@
 {
   "name": "reputation_report",
   "description": "Comprehensive reputation report for AI agents - deep analysis of performance, trends, strengths/weaknesses, competitive position, and actionable recommendations. Full analytics in 15 seconds.",
-  "jobFee": 50,
+  "jobFee": 0.5,
   "jobFeeType": "fixed",
   "requiredFunds": false,
   "requirements": {

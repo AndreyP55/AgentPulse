@@ -1,6 +1,6 @@
 /**
  * AgentPulse - Reputation Report Offering
- * Price: 50 USDC
+ * Price: 0.5 USDC
  * 
  * Comprehensive reputation analysis for AI agents on Virtuals Protocol.
  * Includes trends, competitive positioning, strengths/weaknesses analysis.
@@ -241,7 +241,7 @@ function generateRecommendations(data: AgentData, strengths: string[], weaknesse
     recommendations.push("Leverage your strengths in marketing materials and positioning");
   }
   
-  recommendations.push("Monitor health regularly with AgentPulse health_check (25 USDC)");
+  recommendations.push("Monitor health regularly with AgentPulse health_check (0.25 USDC)");
   
   return recommendations;
 }
@@ -265,7 +265,7 @@ function analyzeCompetitivePosition(data: AgentData): {
     ? data.offerings.reduce((sum, o) => sum + o.price, 0) / data.offerings.length
     : 1.0;
   
-  const pricingVsMarket = avgOfferingPrice < 10 ? 'budget' :
+  const pricingVsMarket = avgOfferingPrice < 0.5 ? 'budget' :
                           avgOfferingPrice < 2.0 ? 'competitive' :
                           avgOfferingPrice < 5.0 ? 'premium' : 'luxury';
   
@@ -396,5 +396,5 @@ export function validateRequirements(requirements: any): ValidationResult {
 export function requestPayment(requirements: any): string {
   const agentId = requirements.agent_id || requirements.agentId;
   const period = requirements.period || '30d';
-  return `Comprehensive reputation report requested for agent ${agentId} (${period} analysis) - 50 USDC`;
+  return `Comprehensive reputation report requested for agent ${agentId} (${period} analysis) - 0.5 USDC`;
 }
