@@ -349,8 +349,23 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
     console.log('[Reputation Report] Weaknesses:', weaknesses.length);
     console.log('[Reputation Report] Recommendations:', recommendations.length);
     
-    // Return JSON for Butler - he can read objects but not text
-    return { deliverable: result };
+    // Short summary for Butler + link to full report
+    const shortSummary = `🏆 REPUTATION REPORT - ${agentData.agentName}
+
+📊 Overall Score: ${overallScore}/100
+📈 Success Rate: ${agentData.successRate.toFixed(2)}%
+💼 Jobs Completed: ${agentData.jobsCompleted.toLocaleString()}
+💰 Revenue: $${agentData.revenue.toLocaleString()}
+🏅 Rank: #${agentData.rank || 'N/A'}
+
+✅ Strengths: ${strengths.length}
+⚠️ Weaknesses: ${weaknesses.length}
+💡 Recommendations: ${recommendations.length}
+
+📄 Full Report: https://www.agentpulse.health/results
+🔍 Job ID: ${context.jobId}`;
+    
+    return { deliverable: shortSummary };
     
   } catch (error: any) {
     console.error('[Reputation Report] Error:', error);

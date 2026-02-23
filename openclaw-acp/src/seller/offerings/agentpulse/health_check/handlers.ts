@@ -213,9 +213,25 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
       console.log('[Health Check] Webhook error (non-critical):', err.message)
     );
     
-    // Return JSON for Butler - he can read objects but not text
+    // Short summary for Butler + link to full report
+    const shortSummary = `🩺 HEALTH CHECK - ${agentData.agentName}
+
+${status === 'healthy' ? '🟢' : status === 'warning' ? '🟡' : '🔴'} Status: ${status.toUpperCase()}
+💯 Health Score: ${healthScore}/100
+
+📊 Quick Stats:
+• Success Rate: ${agentData.successRate.toFixed(2)}%
+• Jobs: ${agentData.jobsCompleted.toLocaleString()}
+• Revenue: $${agentData.revenue.toLocaleString()}
+• Rank: #${agentData.rank || 'N/A'}
+
+💡 ${recommendations.length} recommendations
+
+📄 Full Report: https://www.agentpulse.health/results
+🔍 Job ID: ${context.jobId}`;
+    
     return { 
-      deliverable: result
+      deliverable: shortSummary
     };
     
   } catch (error: any) {
