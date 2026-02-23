@@ -67,10 +67,9 @@ export async function deliverJob(
     `[sellerApi] deliverJob  jobId=${jobId}  deliverable=${delivStr.substring(0, 200)}...${transferStr}`
   );
 
-  // Send deliverable as plain text with type: "text" for Butler compatibility
+  // Send deliverable as plain text for Butler compatibility
   const payload = {
-    type: "text",
-    value: typeof params.deliverable === "string" 
+    deliverable: typeof params.deliverable === "string" 
       ? params.deliverable 
       : JSON.stringify(params.deliverable),
     payableDetail: params.payableDetail
