@@ -2,6 +2,8 @@
 // Wallet / agent info retrieval.
 // =============================================================================
 
+import * as path from "path";
+import { fileURLToPath } from "url";
 import client from "./client.js";
 import { readConfig, writeConfig } from "./config.js";
 
@@ -63,6 +65,9 @@ export async function ensureAgentInConfig(): Promise<void> {
   const hasActive = config.agents?.some((a) => a.active);
   if (hasActive) return;
 
+  const apiKey = config.LITE_AGENT_API_KEY || process.env.LITE_AGENT_API_KEY;
+  if (!apiKey?.trim()) return;
+
   try {
     const me = await getMyAgentInfo();
     const name = me.name?.trim();
@@ -88,7 +93,25 @@ export async function ensureAgentInConfig(): Promise<void> {
         ];
     writeConfig({ ...config, agents: updated });
   } catch {
-    // API failed — caller will get "No active agent" from getActiveAgent
+    // API failed — fallback: use AgentPulse if we have agentpulse offerings folder
+    const fs = await import("fs");
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const offeringsBase = path.resolve(__dirname, "..", "seller", "offerings");
+    const agentpulseDir = path.join(offeringsBase, "agentpulse");
+    if (fs.existsSync(agentpulseDir) && fs.statSync(agentpulseDir).isDirectory()) {
+      const fallbackAgent = {
+        id: "agentpulse",
+        name: "AgentPulse",
+        walletAddress: "0x0",
+        apiKey: apiKey.trim(),
+        active: true,
+      };
+      const agents = (config.agents ?? []).map((a) => ({ ...a, active: false }));
+      writeConfig({
+        ...config,
+        agents: [...agents, fallbackAgent],
+      });
+    }
   }
 }
 
