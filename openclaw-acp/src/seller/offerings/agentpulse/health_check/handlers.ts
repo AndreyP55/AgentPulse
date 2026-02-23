@@ -164,6 +164,8 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
     
     // Build result
     const result = {
+      agentId,
+      agentName: agentData.agentName,
       healthScore,
       status,
       checks: {
@@ -180,6 +182,7 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
         offerings: agentData.offerings,
         rank: agentData.rank
       },
+      issues: [],
       recommendations,
       timestamp: Date.now(),
       checkedBy: "AgentPulse v1.0"
@@ -227,7 +230,7 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
  * Format health check report as readable table
  */
 function formatHealthCheckReport(data: any): string {
-  const { agentId, agentName, healthScore, status, metrics, issues, recommendations, timestamp } = data;
+  const { agentId, agentName, healthScore, status, metrics, issues = [], recommendations = [], timestamp } = data;
   
   const statusEmoji = status === 'healthy' ? '🟢' : status === 'warning' ? '🟡' : '🔴';
   
