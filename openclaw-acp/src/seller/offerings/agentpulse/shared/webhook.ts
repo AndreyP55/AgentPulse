@@ -2,7 +2,7 @@
  * Shared webhook utility for AgentPulse offerings
  */
 
-const WEBHOOK_URL = process.env.WEBHOOK_URL || 'https://www.agentpulse.health/api/webhook/results';
+const WEBHOOK_URL = process.env.WEBHOOK_URL || 'http://localhost:3001/webhook/results';
 
 interface WebhookData {
   jobId?: string;

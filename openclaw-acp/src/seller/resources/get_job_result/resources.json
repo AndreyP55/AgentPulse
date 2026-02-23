@@ -1,5 +1,5 @@
 {
   "name": "get_job_result",
   "description": "Get the result of a completed health check or reputation report by job ID",
-  "url": "https://www.agentpulse.health/api/results"
+  "url": "http://literal:<REDACTED_SERVER_IP>:3001/results"
 }
