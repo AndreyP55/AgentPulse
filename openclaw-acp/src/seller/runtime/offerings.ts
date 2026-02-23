@@ -73,12 +73,17 @@ export async function loadOffering(
 
 /**
  * List all available offering names for a given agent.
+ * Only includes directories that have offering.json (excludes shared/, etc.)
  */
 export function listOfferings(agentDirName: string): string[] {
   const offeringsRoot = resolveOfferingsRoot(agentDirName);
   if (!fs.existsSync(offeringsRoot)) return [];
   return fs
     .readdirSync(offeringsRoot, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
+    .filter(
+      (d) =>
+        d.isDirectory() &&
+        fs.existsSync(path.join(offeringsRoot, d.name, "offering.json"))
+    )
     .map((d) => d.name);
 }
