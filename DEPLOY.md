@@ -24,7 +24,7 @@
 cd /root
 curl -sL https://raw.githubusercontent.com/AndreyP55/AgentPulse/main/openclaw-acp/deploy-from-scratch.sh -o deploy.sh
 chmod +x deploy.sh
-LITE_AGENT_API_KEY=literal:<REDACTED_API_KEY> ./deploy.sh
+LITE_AGENT_API_KEY=ВАШ_API_КЛЮЧ ./deploy.sh
 ```
 
 **Или** если репозиторий уже склонирован:
@@ -68,10 +68,10 @@ npm install
 
 ```bash
 # config.json
-echo '{"LITE_AGENT_API_KEY":"literal:<REDACTED_API_KEY>"}' > config.json
+echo '{"LITE_AGENT_API_KEY":"ВАШ_API_КЛЮЧ"}' > config.json
 
 # .env (дублирование)
-echo 'LITE_AGENT_API_KEY=literal:<REDACTED_API_KEY>' > .env
+echo 'LITE_AGENT_API_KEY=ВАШ_API_КЛЮЧ' > .env
 ```
 
 ### 4. Регистрация offerings
