@@ -1,13 +1,13 @@
 /**
  * AgentPulse - Reputation Report Offering
- * Price: 1000 USDC
+ * Price: 1 USDC
  * 
  * Comprehensive reputation analysis for AI agents on Virtuals Protocol.
  * Includes trends, competitive positioning, strengths/weaknesses analysis.
  */
 
 import type { ExecuteJobResult, ValidationResult } from "../../../runtime/offeringTypes.js";
-import { fetchAgentMetrics, estimateLastActivity } from "../shared/agdp-client.js";
+import { fetchAgentMetrics, estimateLastActivity, resolveAgentId } from "../shared/agdp-client.js";
 
 interface AgentData {
   agentId: string;
@@ -241,7 +241,7 @@ function generateRecommendations(data: AgentData, strengths: string[], weaknesse
     recommendations.push("Leverage your strengths in marketing materials and positioning");
   }
   
-  recommendations.push("Monitor health regularly with AgentPulse health_check (0.1 USDC)");
+  recommendations.push("Monitor health regularly with AgentPulse health_check (0.5 USDC)");
   
   return recommendations;
 }
@@ -279,20 +279,20 @@ function analyzeCompetitivePosition(data: AgentData): {
 /**
  * Main execution function
  */
-export async function executeJob(requirements: any): Promise<ExecuteJobResult> {
+export async function executeJob(requirements: any, context?: any): Promise<ExecuteJobResult> {
   console.log('[Reputation Report] Starting comprehensive analysis...');
   console.log('[Reputation Report] Requirements:', requirements);
   
-  // Support both naming conventions
-  const agentId = requirements.agent_id || requirements.agentId;
+  const agentIdOrName = requirements.agent_id || requirements.agentId;
+  const clientWallet = context?.clientAddress;
   const period = requirements.period || '30d';
   
+  const agentId = await resolveAgentId(agentIdOrName, clientWallet);
   if (!agentId) {
-    throw new Error('agent_id is required');
+    throw new Error('agent_id required. Pass ID (from agdp.io/agent/YOUR_ID) or agent name. Omit to analyze yourself.');
   }
   
   try {
-    // Fetch comprehensive data
     const agentData = await fetchAgentData(agentId);
     
     // Calculate overall score
@@ -362,31 +362,15 @@ export async function executeJob(requirements: any): Promise<ExecuteJobResult> {
  */
 export function validateRequirements(requirements: any): ValidationResult {
   const agentId = requirements.agent_id || requirements.agentId;
-  
-  if (!agentId) {
-    return {
-      valid: false,
-      reason: "agent_id is required - provide the agent ID or wallet address to analyze"
-    };
+  if (agentId !== undefined && agentId !== null && agentId !== '') {
+    if (typeof agentId !== 'string' && typeof agentId !== 'number') {
+      return { valid: false, reason: "agent_id must be a string or number" };
+    }
   }
-  
-  // Validate agent ID format
-  if (typeof agentId !== 'string' && typeof agentId !== 'number') {
-    return {
-      valid: false,
-      reason: "agent_id must be a string or number"
-    };
-  }
-  
-  // Validate period if provided
   const period = requirements.period;
   if (period && !['7d', '30d', '90d'].includes(period)) {
-    return {
-      valid: false,
-      reason: "period must be one of: 7d, 30d, 90d"
-    };
+    return { valid: false, reason: "period must be one of: 7d, 30d, 90d" };
   }
-  
   return { valid: true };
 }
 
@@ -396,5 +380,5 @@ export function validateRequirements(requirements: any): ValidationResult {
 export function requestPayment(requirements: any): string {
   const agentId = requirements.agent_id || requirements.agentId;
   const period = requirements.period || '30d';
-  return `Comprehensive reputation report requested for agent ${agentId} (${period} analysis) - 1000 USDC`;
+  return `Comprehensive reputation report requested for agent ${agentId || 'self'} (${period} analysis) - 1 USDC`;
 }

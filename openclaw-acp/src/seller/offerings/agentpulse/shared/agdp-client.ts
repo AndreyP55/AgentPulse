@@ -28,25 +28,92 @@ export interface AgentMetrics {
   dataSource: 'api' | 'scraping' | 'fallback';
 }
 
+const AXIOS_OPTS = {
+  timeout: 15000,
+  headers: {
+    'User-Agent': 'AgentPulse/1.0',
+    'Accept': 'application/json',
+    'Origin': 'https://agdp.io',
+    'Referer': 'https://agdp.io/'
+  }
+};
+
 /**
- * Fetch agent rank from leaderboard API
+ * Get active epoch ID (Epoch 2, 3, etc.)
+ */
+async function getActiveEpochId(): Promise<number> {
+  try {
+    const res = await axios.get(
+      'https://api.virtuals.io/api/agdp-leaderboard-epochs?sort=epochNumber:desc',
+      { ...AXIOS_OPTS, timeout: 8000 }
+    );
+    const epochs = res.data?.data || [];
+    const active = epochs.find((e: any) => e.status === 'ACTIVE');
+    return active ? (active.id ?? active.epochNumber ?? 2) : 2;
+  } catch {
+    return 2; // Fallback to epoch 2
+  }
+}
+
+/**
+ * Resolve agent ID from: numeric ID, agent name, or client wallet (fallback)
+ */
+export async function resolveAgentId(
+  agentIdOrName: string | number | undefined | null,
+  clientWallet?: string | null
+): Promise<string | null> {
+  // 1. Numeric ID
+  if (agentIdOrName !== undefined && agentIdOrName !== null && agentIdOrName !== '') {
+    const s = String(agentIdOrName).trim();
+    if (/^\d+$/.test(s)) return s;
+    // 2. Agent name -> search by name
+    try {
+      const enc = encodeURIComponent(s);
+      const res = await axios.get(
+        `https://acpx.virtuals.io/api/agents?filters[name][$eq]=${enc}&pagination[pageSize]=1`,
+        AXIOS_OPTS
+      );
+      const agents = res.data?.data || [];
+      if (agents.length > 0 && agents[0].id) return String(agents[0].id);
+    } catch {
+      /* ignore */
+    }
+  }
+  // 3. Fallback: find agent by client wallet
+  if (clientWallet && /^0x[a-fA-F0-9]{40}$/.test(clientWallet)) {
+    try {
+      const enc = encodeURIComponent(clientWallet);
+      const res = await axios.get(
+        `https://acpx.virtuals.io/api/agents?filters[walletAddress][$eq]=${enc}&pagination[pageSize]=1`,
+        AXIOS_OPTS
+      );
+      let agents = res.data?.data || [];
+      if (agents.length === 0) {
+        const res2 = await axios.get(
+          `https://acpx.virtuals.io/api/agents?filters[ownerAddress][$eq]=${enc}&pagination[pageSize]=1`,
+          AXIOS_OPTS
+        );
+        agents = res2.data?.data || [];
+      }
+      if (agents.length > 0 && agents[0].id) return String(agents[0].id);
+    } catch {
+      /* ignore */
+    }
+  }
+  return null;
+}
+
+/**
+ * Fetch agent rank from leaderboard API (uses active epoch)
  */
 async function fetchAgentRank(agentId: string): Promise<number | null> {
   try {
-    // Get current epoch leaderboard (epoch 1 is active as of Feb 2026)
-    const endpoint = `https://api.virtuals.io/api/agdp-leaderboard-epochs/1/ranking?pagination%5BpageSize%5D=1000`;
+    const epochId = await getActiveEpochId();
+    const endpoint = `https://api.virtuals.io/api/agdp-leaderboard-epochs/${epochId}/ranking?pagination%5BpageSize%5D=1000`;
     
-    console.log(`[AGDP Client] Fetching leaderboard for rank...`);
+    console.log(`[AGDP Client] Fetching leaderboard for rank (epoch ${epochId})...`);
     
-    const response = await axios.get(endpoint, {
-      timeout: 15000,
-      headers: {
-        'User-Agent': 'AgentPulse/1.0',
-        'Accept': 'application/json',
-        'Origin': 'https://agdp.io',
-        'Referer': 'https://agdp.io/'
-      }
-    });
+    const response = await axios.get(endpoint, AXIOS_OPTS);
 
     if (response.data && response.data.data && Array.isArray(response.data.data)) {
       // Find agent in leaderboard

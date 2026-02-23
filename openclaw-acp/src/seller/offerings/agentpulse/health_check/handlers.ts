@@ -1,13 +1,13 @@
 /**
  * AgentPulse - Health Check Offering
- * Price: 0.1 USDC
+ * Price: 0.5 USDC
  * 
  * Quick health check for AI agents on Virtuals Protocol.
  * Analyzes success rate, activity, jobs completed, and provides health score.
  */
 
 import type { ExecuteJobResult, ValidationResult } from "../../../runtime/offeringTypes.js";
-import { fetchAgentMetrics, estimateLastActivity } from "../shared/agdp-client.js";
+import { fetchAgentMetrics, estimateLastActivity, resolveAgentId } from "../shared/agdp-client.js";
 import { sendResultToWebhook } from "../shared/webhook.js";
 
 interface AgentData {
@@ -141,16 +141,16 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
   console.log('[Health Check] Starting health check...');
   console.log('[Health Check] Requirements:', requirements);
   
-  // Support both naming conventions
-  const agentId = requirements.agent_id || requirements.agentId;
+  const agentIdOrName = requirements.agent_id || requirements.agentId;
   const jobId = context?.jobId;
+  const clientWallet = context?.clientAddress;
   
+  const agentId = await resolveAgentId(agentIdOrName, clientWallet);
   if (!agentId) {
-    throw new Error('agent_id is required');
+    throw new Error('agent_id required. Pass ID (from agdp.io/agent/YOUR_ID) or agent name. Omit to check yourself.');
   }
   
   try {
-    // Fetch agent data
     const agentData = await fetchAgentData(agentId);
     
     // Calculate health score
@@ -195,7 +195,7 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
       agentId: agentData.agentId,
       agentName: agentData.agentName,
       service: 'Health Check',
-      price: 0.1,
+      price: 0.5,
       score: healthScore,
       status: status,
       metrics: {
@@ -228,22 +228,11 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
  */
 export function validateRequirements(requirements: any): ValidationResult {
   const agentId = requirements.agent_id || requirements.agentId;
-  
-  if (!agentId) {
-    return {
-      valid: false,
-      reason: "agent_id is required - provide the agent ID or wallet address to check"
-    };
+  if (agentId !== undefined && agentId !== null && agentId !== '') {
+    if (typeof agentId !== 'string' && typeof agentId !== 'number') {
+      return { valid: false, reason: "agent_id must be a string or number" };
+    }
   }
-  
-  // Basic validation - agent ID should be a string
-  if (typeof agentId !== 'string' && typeof agentId !== 'number') {
-    return {
-      valid: false,
-      reason: "agent_id must be a string or number"
-    };
-  }
-  
   return { valid: true };
 }
 
@@ -252,5 +241,5 @@ export function validateRequirements(requirements: any): ValidationResult {
  */
 export function requestPayment(requirements: any): string {
   const agentId = requirements.agent_id || requirements.agentId;
-  return `Health check requested for agent ${agentId} - 0.1 USDC`;
+  return `Health check requested for agent ${agentId || 'self'} - 0.5 USDC`;
 }

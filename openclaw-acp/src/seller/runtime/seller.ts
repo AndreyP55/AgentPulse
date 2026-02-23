@@ -194,8 +194,10 @@ async function handleNewTask(data: AcpJobEventData): Promise<void> {
         console.log(
           `[seller] Executing offering "${offeringName}" for job ${jobId} (TRANSACTION phase)...`
         );
+        const context = { jobId, clientAddress: data.clientAddress };
         const result: ExecuteJobResult = await handlers.executeJob(
-          requirements
+          requirements,
+          context
         );
 
         await deliverJob(jobId, {
