@@ -8,6 +8,7 @@
 
 import type { ExecuteJobResult, ValidationResult } from "../../../runtime/offeringTypes.js";
 import { fetchAgentMetrics, estimateLastActivity, resolveAgentId } from "../shared/agdp-client.js";
+import { sendResultToWebhook } from "../shared/webhook.js";
 
 interface AgentData {
   agentId: string;
@@ -348,6 +349,25 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
     console.log('[Reputation Report] Strengths:', strengths.length);
     console.log('[Reputation Report] Weaknesses:', weaknesses.length);
     console.log('[Reputation Report] Recommendations:', recommendations.length);
+    
+    // Send to webhook for Butler resources
+    await sendResultToWebhook({
+      jobId: context?.jobId?.toString(),
+      agentId,
+      agentName: agentData.agentName,
+      service: 'Reputation Report',
+      price: 1,
+      score: overallScore,
+      status: overallScore >= 80 ? 'excellent' : overallScore >= 60 ? 'good' : overallScore >= 40 ? 'developing' : 'struggling',
+      metrics: {
+        successRate: agentData.successRate,
+        jobsCompleted: agentData.jobsCompleted,
+        revenue: agentData.revenue,
+        rank: agentData.rank,
+        uniqueBuyers: agentData.uniqueBuyers
+      },
+      recommendations: recommendations.map(r => r.recommendation)
+    });
     
     // Short summary for Butler + link to full report
     const shortSummary = `🏆 REPUTATION REPORT - ${agentData.agentName}
