@@ -66,15 +66,24 @@ export async function resolveAgentId(
   if (agentIdOrName !== undefined && agentIdOrName !== null && agentIdOrName !== '') {
     const s = String(agentIdOrName).trim();
     if (/^\d+$/.test(s)) return s;
-    // 2. Agent name -> search by name
+    // 2. Agent name -> search by name (prefer agent with most activity when duplicates exist)
     try {
       const enc = encodeURIComponent(s);
       const res = await axios.get(
-        `https://acpx.virtuals.io/api/agents?filters[name][$eq]=${enc}&pagination[pageSize]=1`,
+        `https://acpx.virtuals.io/api/agents?filters[name][$eq]=${enc}&pagination[pageSize]=10`,
         AXIOS_OPTS
       );
       const agents = res.data?.data || [];
-      if (agents.length > 0 && agents[0].id) return String(agents[0].id);
+      if (agents.length > 0) {
+        const best = agents.reduce((a: any, b: any) => {
+          const aJobs = a.successfulJobCount ?? a.metrics?.successfulJobCount ?? 0;
+          const bJobs = b.successfulJobCount ?? b.metrics?.successfulJobCount ?? 0;
+          const aRev = a.revenue ?? a.grossAgenticAmount ?? a.metrics?.revenue ?? 0;
+          const bRev = b.revenue ?? b.grossAgenticAmount ?? b.metrics?.revenue ?? 0;
+          return (bJobs || bRev) > (aJobs || aRev) ? b : a;
+        });
+        if (best.id) return String(best.id);
+      }
     } catch {
       /* ignore */
     }
