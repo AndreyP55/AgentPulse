@@ -1,100 +1,71 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, readFile, mkdir } from 'fs/promises';
-import { join } from 'path';
+import { existsSync } from 'fs';
+import path from 'path';
+
+const RESULTS_DIR = path.join(process.cwd(), 'data', 'results');
+const RESULTS_FILE = path.join(RESULTS_DIR, 'latest.json');
 
 interface WebhookResult {
   jobId: string;
-  timestamp: string;
   agentId: string;
   agentName: string;
   service: string;
   price: number;
   score: number;
   status: string;
-  metrics: {
-    successRate?: number;
-    jobsCompleted?: number;
-    revenue?: number;
-    rank?: number;
-    uniqueBuyers?: number;
-  };
+  metrics: any;
   recommendations?: string[];
+  timestamp?: number;
 }
 
-// Path to store results
-const DATA_DIR = join(process.cwd(), 'data');
-const RESULTS_FILE = join(DATA_DIR, 'results.json');
-
-async function ensureDataDir() {
+export async function POST(request: NextRequest) {
   try {
-    await mkdir(DATA_DIR, { recursive: true });
-  } catch (error) {
-    // Directory already exists
-  }
-}
-
-async function loadResults(): Promise<WebhookResult[]> {
-  try {
-    const data = await readFile(RESULTS_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    return [];
-  }
-}
-
-async function saveResults(results: WebhookResult[]) {
-  await ensureDataDir();
-  await writeFile(RESULTS_FILE, JSON.stringify(results, null, 2));
-}
-
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
+    const data: WebhookResult = await request.json();
     
-    // Validate required fields
-    if (!body.jobId || !body.agentId || !body.score) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
-        { status: 400 }
-      );
+    console.log('[Webhook API] Received result:', {
+      jobId: data.jobId,
+      agentName: data.agentName,
+      service: data.service,
+      score: data.score
+    });
+
+    // Ensure data directory exists
+    if (!existsSync(RESULTS_DIR)) {
+      await mkdir(RESULTS_DIR, { recursive: true });
     }
 
-    // Load existing results
-    const results = await loadResults();
-    
-    // Add new result
-    const newResult: WebhookResult = {
-      jobId: body.jobId,
-      timestamp: new Date().toISOString(),
-      agentId: body.agentId,
-      agentName: body.agentName || `Agent ${body.agentId}`,
-      service: body.service || 'Health Check',
-      price: body.price || 0.25,
-      score: body.score,
-      status: body.status || 'Completed',
-      metrics: body.metrics || {},
-      recommendations: body.recommendations || []
+    // Read existing results
+    let results: WebhookResult[] = [];
+    if (existsSync(RESULTS_FILE)) {
+      const content = await readFile(RESULTS_FILE, 'utf-8');
+      results = JSON.parse(content);
+    }
+
+    // Add timestamp
+    const resultWithTimestamp = {
+      ...data,
+      timestamp: data.timestamp || Date.now()
     };
-    
-    // Add to beginning of array (newest first)
-    results.unshift(newResult);
-    
-    // Keep only last 50 results
-    const trimmedResults = results.slice(0, 50);
-    
+
+    // Add new result (keep last 100)
+    results.unshift(resultWithTimestamp);
+    if (results.length > 100) {
+      results = results.slice(0, 100);
+    }
+
     // Save to file
-    await saveResults(trimmedResults);
-    
-    console.log('[Webhook] New result saved:', newResult.jobId, newResult.agentName);
-    
-    return NextResponse.json({
-      success: true,
-      message: 'Result saved successfully',
-      totalResults: trimmedResults.length
+    await writeFile(RESULTS_FILE, JSON.stringify(results, null, 2));
+
+    console.log('[Webhook API] ✅ Result saved successfully');
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Result received and saved' 
     });
-    
+
   } catch (error: any) {
-    console.error('[Webhook] Error:', error);
+    console.error('[Webhook API] Error:', error);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
@@ -102,21 +73,20 @@ export async function POST(request: Request) {
   }
 }
 
-// GET endpoint to retrieve results
 export async function GET() {
   try {
-    const results = await loadResults();
-    
-    return NextResponse.json({
-      success: true,
-      results,
-      total: results.length
-    });
-    
+    if (!existsSync(RESULTS_FILE)) {
+      return NextResponse.json([]);
+    }
+
+    const content = await readFile(RESULTS_FILE, 'utf-8');
+    const results = JSON.parse(content);
+
+    return NextResponse.json(results);
   } catch (error: any) {
-    console.error('[Webhook] Error loading results:', error);
+    console.error('[Webhook API] Error reading results:', error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { error: error.message },
       { status: 500 }
     );
   }
