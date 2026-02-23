@@ -3,7 +3,7 @@
 // =============================================================================
 
 import client from "./client.js";
-import { readConfig } from "./config.js";
+import { readConfig, writeConfig } from "./config.js";
 
 export interface ActiveAgentInfo {
   name: string;
@@ -55,6 +55,41 @@ export async function requireActiveAgent(): Promise<ActiveAgentInfo> {
     "Error: No agents configured. Run `acp setup` to create one."
   );
   process.exit(1);
+}
+
+/** Ensure config has an active agent. If not, try to fetch from API and sync to config. */
+export async function ensureAgentInConfig(): Promise<void> {
+  const config = readConfig();
+  const hasActive = config.agents?.some((a) => a.active);
+  if (hasActive) return;
+
+  try {
+    const me = await getMyAgentInfo();
+    const name = me.name?.trim();
+    const walletAddress = me.walletAddress?.trim();
+    if (!name || !walletAddress) return;
+
+    const agents = config.agents ?? [];
+    const existing = agents.find((a) => a.walletAddress === walletAddress);
+    const updated = existing
+      ? agents.map((a) => ({
+          ...a,
+          active: a.walletAddress === walletAddress,
+        }))
+      : [
+          ...agents.map((a) => ({ ...a, active: false })),
+          {
+            id: walletAddress,
+            name,
+            walletAddress,
+            apiKey: config.LITE_AGENT_API_KEY,
+            active: true,
+          },
+        ];
+    writeConfig({ ...config, agents: updated });
+  } catch {
+    // API failed — caller will get "No active agent" from getActiveAgent
+  }
 }
 
 export async function getMyAgentInfo(): Promise<{

@@ -23,7 +23,7 @@ import {
   type PriceV2,
   type Resource,
 } from "../lib/api.js";
-import { getMyAgentInfo } from "../lib/wallet.js";
+import { ensureAgentInConfig, getMyAgentInfo } from "../lib/wallet.js";
 import {
   formatPrice,
   getActiveAgent,
@@ -385,6 +385,7 @@ export function requestPayment(request: any): string {
 // -- Create: validate + register --
 
 export async function create(offeringName: string): Promise<void> {
+  await ensureAgentInConfig();
   await checkForLegacyOfferings();
   if (!offeringName) {
     output.fatal("Usage: acp sell create <offering_name>");
@@ -470,6 +471,7 @@ export async function create(offeringName: string): Promise<void> {
 // -- Delete: delist offering --
 
 export async function del(offeringName: string): Promise<void> {
+  await ensureAgentInConfig();
   if (!offeringName) {
     output.fatal("Usage: acp sell delete <offering_name>");
   }
@@ -545,6 +547,7 @@ function acpOfferingNames(acpOfferings: AcpOffering[]): Set<string> {
 }
 
 export async function list(): Promise<void> {
+  await ensureAgentInConfig();
   await checkForLegacyOfferings();
   const acpOfferings = await fetchAcpOfferings();
   const acpNames = acpOfferingNames(acpOfferings);
@@ -640,6 +643,7 @@ function detectHandlers(offeringDir: string): string[] {
 }
 
 export async function inspect(offeringName: string): Promise<void> {
+  await ensureAgentInConfig();
   if (!offeringName) {
     output.fatal("Usage: acp sell inspect <offering_name>");
   }
