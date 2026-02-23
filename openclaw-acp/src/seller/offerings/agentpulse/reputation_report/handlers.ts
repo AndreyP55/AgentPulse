@@ -349,10 +349,8 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
     console.log('[Reputation Report] Weaknesses:', weaknesses.length);
     console.log('[Reputation Report] Recommendations:', recommendations.length);
     
-    // Format as readable table for Butler
-    const formattedReport = formatReputationReport(result);
-    
-    return { deliverable: formattedReport };
+    // Return JSON for Butler - he can read objects but not text
+    return { deliverable: result };
     
   } catch (error: any) {
     console.error('[Reputation Report] Error:', error);

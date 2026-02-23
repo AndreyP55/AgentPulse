@@ -213,11 +213,9 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
       console.log('[Health Check] Webhook error (non-critical):', err.message)
     );
     
-    // Format as readable table for Butler
-    const formattedReport = formatHealthCheckReport(result);
-    
+    // Return JSON for Butler - he can read objects but not text
     return { 
-      deliverable: formattedReport
+      deliverable: result
     };
     
   } catch (error: any) {
