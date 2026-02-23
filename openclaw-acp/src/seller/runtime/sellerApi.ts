@@ -64,8 +64,17 @@ export async function deliverJob(
     ? `  transfer: ${params.payableDetail.amount} @ ${params.payableDetail.tokenAddress}`
     : "";
   console.log(
-    `[sellerApi] deliverJob  jobId=${jobId}  deliverable=${delivStr}${transferStr}`
+    `[sellerApi] deliverJob  jobId=${jobId}  deliverable=${delivStr.substring(0, 200)}...${transferStr}`
   );
 
-  return await client.post(`/acp/providers/jobs/${jobId}/deliverable`, params);
+  // Send deliverable as plain text with type: "text" for Butler compatibility
+  const payload = {
+    type: "text",
+    value: typeof params.deliverable === "string" 
+      ? params.deliverable 
+      : JSON.stringify(params.deliverable),
+    payableDetail: params.payableDetail
+  };
+
+  return await client.post(`/acp/providers/jobs/${jobId}/deliverable`, payload);
 }
