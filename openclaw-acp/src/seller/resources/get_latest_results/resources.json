@@ -1,0 +1,5 @@
+{
+  "name": "get_latest_results",
+  "description": "Get the latest health check and reputation report results from AgentPulse",
+  "url": "https://www.agentpulse.health/api/webhook/results"
+}

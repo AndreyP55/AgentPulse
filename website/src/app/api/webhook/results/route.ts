@@ -3,7 +3,11 @@ import { writeFile, readFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 
-const RESULTS_DIR = path.join(process.cwd(), 'data', 'results');
+// Use /tmp for serverless (Vercel) or local data dir for VPS
+const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
+const RESULTS_DIR = isServerless 
+  ? path.join('/tmp', 'agentpulse-results')
+  : path.join(process.cwd(), 'data', 'results');
 const RESULTS_FILE = path.join(RESULTS_DIR, 'latest.json');
 
 interface WebhookResult {
