@@ -375,23 +375,29 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
       competitivePosition
     });
     
-    // Short summary for Butler + link to full report
-    const shortSummary = `🏆 REPUTATION REPORT - ${agentData.agentName}
+    // Deliverable with full strengths, weaknesses, recommendations (so Butler/UI shows them)
+    const strengthsBlock = strengths.length
+      ? `\n✅ Сильные стороны:\n${strengths.map((s, i) => `${i + 1}. ${s}`).join('\n')}`
+      : '';
+    const weaknessesBlock = weaknesses.length
+      ? `\n⚠️ Слабые стороны:\n${weaknesses.map((w, i) => `${i + 1}. ${w}`).join('\n')}`
+      : '';
+    const recommendationsBlock = recommendations.length
+      ? `\n💡 Рекомендации:\n${recommendations.map((r, i) => `${i + 1}. ${r}`).join('\n')}`
+      : '';
+
+    const fullReport = `🏆 REPUTATION REPORT - ${agentData.agentName}
 
 📊 Overall Score: ${overallScore}/100
 📈 Success Rate: ${agentData.successRate.toFixed(2)}%
 💼 Jobs Completed: ${agentData.jobsCompleted.toLocaleString()}
 💰 Revenue: $${agentData.revenue.toLocaleString()}
 🏅 Rank: #${agentData.rank || 'N/A'}
+${strengthsBlock}${weaknessesBlock}${recommendationsBlock}
 
-✅ Strengths: ${strengths.length}
-⚠️ Weaknesses: ${weaknesses.length}
-💡 Recommendations: ${recommendations.length}
-
-✅ Use Resource 'get_latest_results' to see full details
 🔍 Job ID: ${context.jobId}`;
-    
-    return { deliverable: shortSummary };
+
+    return { deliverable: fullReport };
     
   } catch (error: any) {
     console.error('[Reputation Report] Error:', error);
