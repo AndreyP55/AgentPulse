@@ -227,7 +227,7 @@ ${status === 'healthy' ? '🟢' : status === 'warning' ? '🟡' : '🔴'} Status
 
 💡 ${recommendations.length} recommendations
 
-📄 Full Report: https://www.agentpulse.health/results
+✅ Use Resource 'get_latest_results' to see full details
 🔍 Job ID: ${context.jobId}`;
     
     return { 

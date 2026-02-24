@@ -382,7 +382,7 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
 ⚠️ Weaknesses: ${weaknesses.length}
 💡 Recommendations: ${recommendations.length}
 
-📄 Full Report: https://www.agentpulse.health/results
+✅ Use Resource 'get_latest_results' to see full details
 🔍 Job ID: ${context.jobId}`;
     
     return { deliverable: shortSummary };
