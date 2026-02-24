@@ -350,7 +350,7 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
     console.log('[Reputation Report] Weaknesses:', weaknesses.length);
     console.log('[Reputation Report] Recommendations:', recommendations.length);
     
-    // Send to webhook for Butler resources
+    // Send to webhook for Butler resources (full reputation data for Resource)
     await sendResultToWebhook({
       jobId: context?.jobId?.toString(),
       agentId,
@@ -366,7 +366,13 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
         rank: agentData.rank,
         uniqueBuyers: agentData.uniqueBuyers
       },
-      recommendations: recommendations.map(r => r.recommendation)
+      recommendations,
+      period,
+      summary: result.summary,
+      strengths,
+      weaknesses,
+      trends,
+      competitivePosition
     });
     
     // Short summary for Butler + link to full report

@@ -20,6 +20,13 @@ interface WebhookData {
     uniqueBuyers?: number;
   };
   recommendations?: string[];
+  /** Reputation Report only */
+  period?: string;
+  summary?: string;
+  strengths?: string[];
+  weaknesses?: string[];
+  trends?: { jobsGrowth?: string; revenueGrowth?: string; ratingTrend?: string };
+  competitivePosition?: { rank?: number | null; category?: string; pricingVsMarket?: string };
 }
 
 /**
@@ -32,7 +39,7 @@ export async function sendResultToWebhook(data: WebhookData): Promise<void> {
       return;
     }
     
-    const webhookPayload = {
+    const webhookPayload: Record<string, unknown> = {
       jobId: data.jobId || `job_${Date.now()}`,
       agentId: data.agentId,
       agentName: data.agentName,
@@ -43,6 +50,12 @@ export async function sendResultToWebhook(data: WebhookData): Promise<void> {
       metrics: data.metrics,
       recommendations: data.recommendations || []
     };
+    if (data.period !== undefined) webhookPayload.period = data.period;
+    if (data.summary !== undefined) webhookPayload.summary = data.summary;
+    if (data.strengths?.length) webhookPayload.strengths = data.strengths;
+    if (data.weaknesses?.length) webhookPayload.weaknesses = data.weaknesses;
+    if (data.trends) webhookPayload.trends = data.trends;
+    if (data.competitivePosition) webhookPayload.competitivePosition = data.competitivePosition;
     
     console.log(`[Webhook] Sending ${data.service} result to:`, WEBHOOK_URL);
     
