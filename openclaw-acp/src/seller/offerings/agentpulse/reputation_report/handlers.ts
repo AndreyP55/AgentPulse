@@ -1,6 +1,6 @@
 /**
  * AgentPulse - Reputation Report Offering
- * Price: 1 USDC
+ * Price: 100 USDC
  * 
  * Comprehensive reputation analysis for AI agents on Virtuals Protocol.
  * Includes trends, competitive positioning, strengths/weaknesses analysis.
@@ -242,7 +242,7 @@ function generateRecommendations(data: AgentData, strengths: string[], weaknesse
     recommendations.push("Leverage your strengths in marketing materials and positioning");
   }
   
-  recommendations.push("Monitor health regularly with AgentPulse health_check (0.5 USDC)");
+  recommendations.push("Monitor health regularly with AgentPulse health_check (10 USDC)");
   
   return recommendations;
 }
@@ -356,7 +356,7 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
       agentId,
       agentName: agentData.agentName,
       service: 'Reputation Report',
-      price: 1,
+      price: 100,
       score: overallScore,
       status: overallScore >= 80 ? 'excellent' : overallScore >= 60 ? 'good' : overallScore >= 40 ? 'developing' : 'struggling',
       metrics: {
@@ -471,7 +471,7 @@ ${recommendations.map((r: string, i: number) => `│ ${i + 1}. ${r.padEnd(73)}�
 🤖 Analyzed by: ${data.analyzedBy}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Need a quick health check? Try AgentPulse health_check for 0.5 USDC!
+Need a quick health check? Try AgentPulse health_check for 10 USDC!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `.trim();
 }
@@ -499,5 +499,5 @@ export function validateRequirements(requirements: any): ValidationResult {
 export function requestPayment(requirements: any): string {
   const agentId = requirements.agent_id || requirements.agentId;
   const period = requirements.period || '30d';
-  return `Comprehensive reputation report requested for agent ${agentId || 'self'} (${period} analysis) - 1 USDC`;
+  return `Comprehensive reputation report requested for agent ${agentId || 'self'} (${period} analysis) - 100 USDC`;
 }

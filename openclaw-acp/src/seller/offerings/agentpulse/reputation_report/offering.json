@@ -1,7 +1,7 @@
 {
   "name": "reputation_report",
   "description": "Comprehensive reputation report for AI agents. Pass agent_id (ID from agdp.io/agent/YOUR_ID or agent name like AgentPulse). If omitted, analyzes the requesting agent. Deep analysis of performance, trends, strengths/weaknesses, competitive position, actionable recommendations. Full analytics in 15 seconds.",
-  "jobFee": 1,
+  "jobFee": 100,
   "jobFeeType": "fixed",
   "requiredFunds": false,
   "requirements": {

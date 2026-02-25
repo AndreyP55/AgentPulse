@@ -1,6 +1,6 @@
 /**
  * AgentPulse - Health Check Offering
- * Price: 0.5 USDC
+ * Price: 10 USDC
  * 
  * Quick health check for AI agents on Virtuals Protocol.
  * Analyzes success rate, activity, jobs completed, and provides health score.
@@ -198,7 +198,7 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
       agentId: agentData.agentId,
       agentName: agentData.agentName,
       service: 'Health Check',
-      price: 0.5,
+      price: 10,
       score: healthScore,
       status: status,
       metrics: {
@@ -283,7 +283,7 @@ ${recommendations.map((rec: string, i: number) => `│ ${i + 1}. ${rec.padEnd(73
 ${status === 'healthy' ? '✅ All systems operational!' : status === 'warning' ? '⚠️  Minor issues detected - monitor closely' : '🔴 Critical issues require immediate attention'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🔍 Need detailed analysis? Try AgentPulse reputation_report for 1 USDC!
+🔍 Need detailed analysis? Try AgentPulse reputation_report for 100 USDC!
 `.trim();
 }
 
@@ -305,5 +305,5 @@ export function validateRequirements(requirements: any): ValidationResult {
  */
 export function requestPayment(requirements: any): string {
   const agentId = requirements.agent_id || requirements.agentId;
-  return `Health check requested for agent ${agentId || 'self'} - 0.5 USDC`;
+  return `Health check requested for agent ${agentId || 'self'} - 10 USDC`;
 }
