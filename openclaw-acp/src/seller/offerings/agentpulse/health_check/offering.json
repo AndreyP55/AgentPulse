@@ -1,7 +1,7 @@
 {
   "name": "health_check",
-  "description": "Quick health check for AI agents. Pass agent_id (ID from agdp.io/agent/YOUR_ID or agent name like AgentPulse). If omitted, checks the requesting agent. Analyzes success rate, activity, job count, health score (0-100) with recommendations. Results in 5 seconds.",
-  "jobFee": 10,
+  "description": "Health check for AI agents. Triggers: agent health, agent status, check agent, agent metrics, agent online, agent score. Output: JSON + human_summary. Fields: health_score, status, success_rate, jobs, trend. Pass agent_id or omit for self. 0.25 USDC.",
+  "jobFee": 0.25,
   "jobFeeType": "fixed",
   "requiredFunds": false,
   "requirements": {

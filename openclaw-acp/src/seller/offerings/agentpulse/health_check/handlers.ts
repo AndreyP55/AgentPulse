@@ -1,6 +1,6 @@
 /**
  * AgentPulse - Health Check Offering
- * Price: 10 USDC
+ * Price: 0.25 USDC
  * 
  * Quick health check for AI agents on Virtuals Protocol.
  * Analyzes success rate, activity, jobs completed, and provides health score.
@@ -198,7 +198,7 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
       agentId: agentData.agentId,
       agentName: agentData.agentName,
       service: 'Health Check',
-      price: 10,
+      price: 0.25,
       score: healthScore,
       status: status,
       metrics: {
@@ -213,26 +213,21 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
       console.log('[Health Check] Webhook error (non-critical):', err.message)
     );
     
-    // Short summary for Butler + link to full report
-    const shortSummary = `🩺 HEALTH CHECK - ${agentData.agentName}
+    // Trend: up/stable/down (mock - no historical data)
+    const trend = agentData.successRate >= 90 && agentData.jobsCompleted > 50 ? "up" : "stable";
 
-${status === 'healthy' ? '🟢' : status === 'warning' ? '🟡' : '🔴'} Status: ${status.toUpperCase()}
-💯 Health Score: ${healthScore}/100
-
-📊 Quick Stats:
-• Success Rate: ${agentData.successRate.toFixed(2)}%
-• Jobs: ${agentData.jobsCompleted.toLocaleString()}
-• Revenue: $${agentData.revenue.toLocaleString()}
-• Rank: #${agentData.rank || 'N/A'}
-
-💡 ${recommendations.length} recommendations
-
-✅ Use Resource 'get_latest_results' to see full details
-🔍 Job ID: ${context.jobId}`;
-    
-    return { 
-      deliverable: shortSummary
+    // JSON for agents + human_summary for Butler/humans (both audiences)
+    const deliverable = {
+      health_score: healthScore,
+      status,
+      success_rate: agentData.successRate,
+      jobs: agentData.jobsCompleted,
+      trend,
+      recommendations,
+      human_summary: `🩺 HEALTH CHECK - ${agentData.agentName}\n${status === 'healthy' ? '🟢' : status === 'warning' ? '🟡' : '🔴'} Status: ${status.toUpperCase()}\n💯 Health Score: ${healthScore}/100\n📊 Success Rate: ${agentData.successRate.toFixed(2)}%\n💼 Jobs: ${agentData.jobsCompleted.toLocaleString()}\n💰 Revenue: $${agentData.revenue.toLocaleString()}\n🏅 Rank: #${agentData.rank || 'N/A'}\n💡 ${recommendations.length} recommendations`
     };
+
+    return { deliverable: JSON.stringify(deliverable) };
     
   } catch (error: any) {
     console.error('[Health Check] Error:', error);
@@ -283,7 +278,7 @@ ${recommendations.map((rec: string, i: number) => `│ ${i + 1}. ${rec.padEnd(73
 ${status === 'healthy' ? '✅ All systems operational!' : status === 'warning' ? '⚠️  Minor issues detected - monitor closely' : '🔴 Critical issues require immediate attention'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🔍 Need detailed analysis? Try AgentPulse reputation_report for 100 USDC!
+🔍 Need detailed analysis? Try AgentPulse reputation_report for 1 USDC!
 `.trim();
 }
 
@@ -305,5 +300,5 @@ export function validateRequirements(requirements: any): ValidationResult {
  */
 export function requestPayment(requirements: any): string {
   const agentId = requirements.agent_id || requirements.agentId;
-  return `Health check requested for agent ${agentId || 'self'} - 10 USDC`;
+  return `Health check requested for agent ${agentId || 'self'} - 0.25 USDC`;
 }

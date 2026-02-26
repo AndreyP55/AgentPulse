@@ -1,0 +1,14 @@
+{
+  "name": "agent_risk_flags",
+  "description": "Risk flags for AI agents. Triggers: agent risk, risk flags, due diligence, vet agent, agent vetting, risk assessment. Output: JSON + human_summary. Fields: risk_score, flags[], verdict. For pipelines and risk engines. Pass agent_id or omit for self. 0.1 USDC.",
+  "jobFee": 0.1,
+  "jobFeeType": "fixed",
+  "requiredFunds": false,
+  "requirements": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent ID (number) or agent name. Find ID at agdp.io/agent/YOUR_ID. Omit to check yourself.",
+      "required": false
+    }
+  }
+}

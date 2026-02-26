@@ -105,10 +105,29 @@ async function selectOrCreateAgent(
       const selected = agents[choiceNum - 1];
 
       if (selected.active && selected.apiKey) {
-        // Already the active agent — no need to regenerate
+        // Already the active agent — ensure LITE_AGENT_API_KEY is set (fixes 403 when config was stale)
+        activateAgent(selected.id, selected.apiKey);
         output.success(`Active agent: ${selected.name} (unchanged)`);
         output.log(`    Wallet:  ${selected.walletAddress}`);
         output.log(`    API Key: ${redactApiKey(selected.apiKey)}\n`);
+      } else if (selected.active && !selected.apiKey) {
+        // Active but no key in config — regenerate to get fresh key
+        const proceed = await stopSellerIfRunning();
+        if (!proceed) {
+          output.log("  Setup cancelled.\n");
+          return;
+        }
+        try {
+          const result = await regenerateApiKey(sessionToken, selected.walletAddress);
+          activateAgent(selected.id, result.apiKey);
+          output.success(`Active agent: ${selected.name} (key refreshed)`);
+          output.log(`    Wallet:  ${selected.walletAddress}`);
+          output.log(`    API Key: ${redactApiKey(result.apiKey)}\n`);
+        } catch (e) {
+          output.error(
+            `Failed to refresh key: ${e instanceof Error ? e.message : String(e)}`
+          );
+        }
       } else {
         // Switching to a different agent — stop seller + regenerate key
         const proceed = await stopSellerIfRunning();

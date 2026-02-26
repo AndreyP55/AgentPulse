@@ -78,6 +78,12 @@ export function loadApiKey(): string | undefined {
     process.env.LITE_AGENT_API_KEY = key;
     return key;
   }
+  // Fallback: use active agent's apiKey (fixes 403 when setup "unchanged" didn't write LITE_AGENT_API_KEY)
+  const active = config.agents?.find((a) => a.active);
+  if (active?.apiKey && typeof active.apiKey === "string" && active.apiKey.trim()) {
+    process.env.LITE_AGENT_API_KEY = active.apiKey;
+    return active.apiKey;
+  }
   return undefined;
 }
 

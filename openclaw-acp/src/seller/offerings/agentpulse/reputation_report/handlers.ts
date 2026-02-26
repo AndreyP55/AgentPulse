@@ -1,6 +1,6 @@
 /**
  * AgentPulse - Reputation Report Offering
- * Price: 100 USDC
+ * Price: 1 USDC
  * 
  * Comprehensive reputation analysis for AI agents on Virtuals Protocol.
  * Includes trends, competitive positioning, strengths/weaknesses analysis.
@@ -242,7 +242,7 @@ function generateRecommendations(data: AgentData, strengths: string[], weaknesse
     recommendations.push("Leverage your strengths in marketing materials and positioning");
   }
   
-  recommendations.push("Monitor health regularly with AgentPulse health_check (10 USDC)");
+  recommendations.push("Monitor health regularly with AgentPulse health_check (0.25 USDC)");
   
   return recommendations;
 }
@@ -356,7 +356,7 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
       agentId,
       agentName: agentData.agentName,
       service: 'Reputation Report',
-      price: 100,
+      price: 1,
       score: overallScore,
       status: overallScore >= 80 ? 'excellent' : overallScore >= 60 ? 'good' : overallScore >= 40 ? 'developing' : 'struggling',
       metrics: {
@@ -375,29 +375,31 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
       competitivePosition
     });
     
-    // Deliverable with full strengths, weaknesses, recommendations (so Butler/UI shows them)
+    // JSON for agents + human_summary for Butler/humans (both audiences)
     const strengthsBlock = strengths.length
-      ? `\n✅ Сильные стороны:\n${strengths.map((s, i) => `${i + 1}. ${s}`).join('\n')}`
+      ? `\n✅ Strengths:\n${strengths.map((s, i) => `${i + 1}. ${s}`).join('\n')}`
       : '';
     const weaknessesBlock = weaknesses.length
-      ? `\n⚠️ Слабые стороны:\n${weaknesses.map((w, i) => `${i + 1}. ${w}`).join('\n')}`
+      ? `\n⚠️ Weaknesses:\n${weaknesses.map((w, i) => `${i + 1}. ${w}`).join('\n')}`
       : '';
     const recommendationsBlock = recommendations.length
-      ? `\n💡 Рекомендации:\n${recommendations.map((r, i) => `${i + 1}. ${r}`).join('\n')}`
+      ? `\n💡 Recommendations:\n${recommendations.map((r, i) => `${i + 1}. ${r}`).join('\n')}`
       : '';
 
-    const fullReport = `🏆 REPUTATION REPORT - ${agentData.agentName}
+    const humanSummary = `🏆 REPUTATION REPORT - ${agentData.agentName}\n📊 Overall Score: ${overallScore}/100\n📈 Success Rate: ${agentData.successRate.toFixed(2)}%\n💼 Jobs: ${agentData.jobsCompleted.toLocaleString()}\n💰 Revenue: $${agentData.revenue.toLocaleString()}\n🏅 Rank: #${agentData.rank || 'N/A'}${strengthsBlock}${weaknessesBlock}${recommendationsBlock}`;
 
-📊 Overall Score: ${overallScore}/100
-📈 Success Rate: ${agentData.successRate.toFixed(2)}%
-💼 Jobs Completed: ${agentData.jobsCompleted.toLocaleString()}
-💰 Revenue: $${agentData.revenue.toLocaleString()}
-🏅 Rank: #${agentData.rank || 'N/A'}
-${strengthsBlock}${weaknessesBlock}${recommendationsBlock}
+    const deliverable = {
+      overall_score: overallScore,
+      strengths,
+      weaknesses,
+      recommendations,
+      competitive_position: competitivePosition,
+      trends,
+      summary: result.summary,
+      human_summary: humanSummary
+    };
 
-🔍 Job ID: ${context.jobId}`;
-
-    return { deliverable: fullReport };
+    return { deliverable: JSON.stringify(deliverable) };
     
   } catch (error: any) {
     console.error('[Reputation Report] Error:', error);
@@ -471,7 +473,7 @@ ${recommendations.map((r: string, i: number) => `│ ${i + 1}. ${r.padEnd(73)}�
 🤖 Analyzed by: ${data.analyzedBy}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Need a quick health check? Try AgentPulse health_check for 10 USDC!
+Need a quick health check? Try AgentPulse health_check for 0.25 USDC!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `.trim();
 }
@@ -499,5 +501,5 @@ export function validateRequirements(requirements: any): ValidationResult {
 export function requestPayment(requirements: any): string {
   const agentId = requirements.agent_id || requirements.agentId;
   const period = requirements.period || '30d';
-  return `Comprehensive reputation report requested for agent ${agentId || 'self'} (${period} analysis) - 100 USDC`;
+  return `Comprehensive reputation report requested for agent ${agentId || 'self'} (${period} analysis) - 1 USDC`;
 }
