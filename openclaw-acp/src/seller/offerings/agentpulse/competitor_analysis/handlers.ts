@@ -377,7 +377,7 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
 
   const humanSummary =
     `🔍 COMPETITOR ANALYSIS — ${targetMetrics.agentName}\n` +
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+    `——————————\n` +
     `\n📊 Market Position (out of ${leaderboard.length} agents):\n` +
     `  Rank: #${targetRank}\n` +
     `  Revenue: top ${100 - position.revenue_percentile}% | Jobs: top ${100 - position.jobs_percentile}%\n` +

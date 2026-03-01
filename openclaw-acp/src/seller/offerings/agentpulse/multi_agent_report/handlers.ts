@@ -233,7 +233,7 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
 
   const humanSummary =
     `📋 MULTI-AGENT REPORT (${analyses.length} agents)\n` +
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+    `——————————\n` +
     `📊 Portfolio Health: ${avgHealth}/100 | Avg Risk: ${avgRisk}/100\n` +
     `💼 Total Jobs: ${totalJobs.toLocaleString()} | Total Revenue: $${totalRevenue.toFixed(2)}\n` +
     `🏆 Best: ${best.agentName} (${best.healthScore}/100)\n` +
