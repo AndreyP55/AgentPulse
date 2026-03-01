@@ -210,33 +210,42 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
     10
   );
 
-  // Fetch offerings for each competitor (parallel, with timeout safety)
-  console.log(`[Competitor Analysis] Fetching offerings for ${closestEntries.length} competitors...`);
-  const compOfferingsArr = await Promise.all(
-    closestEntries.map((e) => fetchAgentOfferings(e.agentId).catch(() => [] as AgentOffering[]))
+  // Fetch full metrics + offerings for each competitor (parallel)
+  console.log(`[Competitor Analysis] Fetching full metrics + offerings for ${closestEntries.length} competitors...`);
+  const compDataArr = await Promise.all(
+    closestEntries.map(async (e) => {
+      const [metrics, offerings] = await Promise.all([
+        fetchAgentMetrics(e.agentId).catch(() => null),
+        fetchAgentOfferings(e.agentId).catch(() => [] as AgentOffering[]),
+      ]);
+      return { entry: e, metrics, offerings };
+    })
   );
 
-  // Build full competitor profiles
-  const competitors: CompetitorProfile[] = closestEntries.map((e, i) => {
-    const offerings = compOfferingsArr[i];
-    const rpj = safeDiv(e.revenue, e.successfulJobCount);
-    const rpb = safeDiv(e.revenue, e.uniqueBuyerCount);
+  // Build full competitor profiles using real metrics when available
+  const competitors: CompetitorProfile[] = compDataArr.map(({ entry, metrics, offerings }) => {
+    const rev = metrics?.revenue ?? entry.revenue;
+    const jobs = metrics?.jobsCompleted ?? entry.successfulJobCount;
+    const buyers = metrics?.uniqueBuyers ?? entry.uniqueBuyerCount;
+    const rate = metrics?.successRate ?? entry.successRate;
+    const rpj = safeDiv(rev, jobs);
+    const rpb = safeDiv(rev, buyers);
     const avgPrice = offerings.length > 0
       ? offerings.reduce((s, o) => s + o.price, 0) / offerings.length
       : 0;
     const { level, reason } = assessThreat(
       { revenue: targetMetrics.revenue, jobs: targetMetrics.jobsCompleted, successRate: targetMetrics.successRate, rank: targetRank },
-      { revenue: e.revenue, jobs: e.successfulJobCount, successRate: e.successRate, rank: e.rank, name: e.name }
+      { revenue: rev, jobs, successRate: rate, rank: entry.rank, name: entry.name }
     );
 
     return {
-      agentId: e.agentId,
-      name: e.name,
-      rank: e.rank,
-      revenue: e.revenue,
-      jobs: e.successfulJobCount,
-      successRate: e.successRate,
-      uniqueBuyers: e.uniqueBuyerCount,
+      agentId: entry.agentId,
+      name: metrics?.agentName ?? entry.name,
+      rank: entry.rank,
+      revenue: rev,
+      jobs,
+      successRate: rate,
+      uniqueBuyers: buyers,
       revenuePerJob: rpj,
       revenuePerBuyer: rpb,
       offerings,
