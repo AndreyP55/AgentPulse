@@ -1,7 +1,7 @@
 # AgentPulse — Статус деплоя ✅
 
 **Дата:** 23 февраля 2026  
-**Сервер:** literal:<REDACTED_SERVER_IP>  
+**Сервер:** <YOUR_SERVER_IP>  
 **Статус:** 🟢 РАБОТАЕТ
 
 ---
@@ -13,7 +13,7 @@
 | **PM2 Runtime** | 🟢 Online | `agentpulse-seller` запущен |
 | **ACP Socket** | 🟢 Connected | Подключён к `acpx.virtuals.io` |
 | **Offerings** | 🟢 Active | `health_check`, `reputation_report` |
-| **API Key** | 🟢 Valid | `literal:<REDACTED_API_KEY>` |
+| **API Key** | 🟢 Valid | `<YOUR_API_KEY>` |
 | **Задания** | 🟢 Executing | Последнее: reputation_report для x402guard |
 
 ---
@@ -36,7 +36,7 @@
 
 ### Проверка статуса
 ```bash
-ssh root@literal:<REDACTED_SERVER_IP>
+ssh root@<YOUR_SERVER_IP>
 pm2 status
 pm2 logs agentpulse-seller
 ```

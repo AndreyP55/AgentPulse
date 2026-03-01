@@ -76,13 +76,12 @@ export async function GET(request: Request) {
       source: 'static'
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[API] Error:', error);
     
     return NextResponse.json({
       success: false,
       error: 'Failed to fetch case studies',
-      message: error.message,
       cases: []
     }, { status: 500 });
   }

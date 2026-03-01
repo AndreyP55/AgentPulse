@@ -42,7 +42,7 @@ chmod +x deploy-from-scratch.sh
 ### 1. Подготовка сервера
 
 ```bash
-ssh root@literal:<REDACTED_SERVER_IP>
+ssh root@<YOUR_SERVER_IP>
 
 # Node.js 20+
 curl -fsSL https://deb.nodesource.com/setup_20.x | bash -

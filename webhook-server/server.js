@@ -9,7 +9,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || '';
 
 const RESULTS_DIR = path.join(__dirname, 'data');
 const RESULTS_FILE = path.join(RESULTS_DIR, 'results.json');
@@ -17,10 +18,22 @@ const RESULTS_FILE = path.join(RESULTS_DIR, 'results.json');
 app.use(cors());
 app.use(express.json());
 
-// POST /webhook/results - receive results from agent
-app.post('/webhook/results', async (req, res) => {
+function checkAuth(req, res, next) {
+  if (!WEBHOOK_SECRET) return next();
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (token !== WEBHOOK_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+}
+
+app.post('/webhook/results', checkAuth, async (req, res) => {
   try {
     const data = req.body;
+
+    if (!data.jobId || !data.agentId || !data.service) {
+      return res.status(400).json({ error: 'Missing required fields: jobId, agentId, service' });
+    }
     
     console.log('[Webhook] Received result:', {
       jobId: data.jobId,
@@ -29,44 +42,38 @@ app.post('/webhook/results', async (req, res) => {
       score: data.score
     });
 
-    // Ensure data directory exists
     if (!existsSync(RESULTS_DIR)) {
       await mkdir(RESULTS_DIR, { recursive: true });
     }
 
-    // Read existing results
     let results = [];
     if (existsSync(RESULTS_FILE)) {
       const content = await readFile(RESULTS_FILE, 'utf-8');
       results = JSON.parse(content);
     }
 
-    // Add timestamp
     const resultWithTimestamp = {
       ...data,
       timestamp: data.timestamp || Date.now()
     };
 
-    // Add new result (keep last 100)
     results.unshift(resultWithTimestamp);
     if (results.length > 100) {
       results = results.slice(0, 100);
     }
 
-    // Save to file
     await writeFile(RESULTS_FILE, JSON.stringify(results, null, 2));
 
-    console.log('[Webhook] ✅ Result saved successfully');
+    console.log('[Webhook] Result saved successfully');
 
     res.json({ success: true, message: 'Result received and saved' });
 
   } catch (error) {
     console.error('[Webhook] Error:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 
-// GET /results - get all results
 app.get('/results', async (req, res) => {
   try {
     if (!existsSync(RESULTS_FILE)) {
@@ -79,11 +86,10 @@ app.get('/results', async (req, res) => {
     res.json(results);
   } catch (error) {
     console.error('[Results API] Error:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Failed to read results' });
   }
 });
 
-// GET /results/:jobId - get specific result
 app.get('/results/:jobId', async (req, res) => {
   try {
     const { jobId } = req.params;
@@ -98,7 +104,7 @@ app.get('/results/:jobId', async (req, res) => {
     const result = results.find(r => 
       r.jobId === jobId || 
       r.jobId === `job_${jobId}` ||
-      String(r.jobId).includes(jobId)
+      String(r.jobId) === jobId
     );
 
     if (!result) {
@@ -109,12 +115,13 @@ app.get('/results/:jobId', async (req, res) => {
 
   } catch (error) {
     console.error('[Results API] Error:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`[Webhook Server] Running on http://localhost:${PORT}`);
+  console.log(`[Webhook Server] Running on port ${PORT}`);
+  console.log(`[Webhook Server] Auth: ${WEBHOOK_SECRET ? 'enabled' : 'disabled'}`);
   console.log(`[Webhook Server] Endpoints:`);
   console.log(`  POST /webhook/results - Receive results from agent`);
   console.log(`  GET  /results - Get all results`);

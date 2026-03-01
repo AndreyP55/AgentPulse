@@ -3,14 +3,14 @@
 ## 📋 ИНФОРМАЦИЯ О СЕРВЕРЕ
 
 **VPS:** VDSina  
-**IP:** literal:<REDACTED_SERVER_IP>  
+**IP:** <YOUR_SERVER_IP>  
 **OS:** Ubuntu 24.04  
 **Node.js:** v20.20.0  
 **PM2:** v6.0.14  
 
 **Доступ:**
 ```bash
-ssh root@literal:<REDACTED_SERVER_IP>
+ssh root@<YOUR_SERVER_IP>
 ```
 
 ---
@@ -50,7 +50,7 @@ npm install
 
 # Копирование config.json с компьютера (с актуальным токеном)
 # Выполняется с ЛОКАЛЬНОГО компьютера:
-# scp c:\Users\Pc\Desktop\AgentPulse\openclaw-acp\config.json root@literal:<REDACTED_SERVER_IP>:/root/AgentPulse/openclaw-acp/
+# scp c:\Users\Pc\Desktop\AgentPulse\openclaw-acp\config.json root@<YOUR_SERVER_IP>:/root/AgentPulse/openclaw-acp/
 ```
 
 ### 3. Запуск через PM2
@@ -152,7 +152,7 @@ cd c:\Users\Pc\Desktop\AgentPulse\openclaw-acp
 npm run setup
 
 # 2. Скопировать config.json на сервер
-scp c:\Users\Pc\Desktop\AgentPulse\openclaw-acp\config.json root@literal:<REDACTED_SERVER_IP>:/root/AgentPulse/openclaw-acp/
+scp c:\Users\Pc\Desktop\AgentPulse\openclaw-acp\config.json root@<YOUR_SERVER_IP>:/root/AgentPulse/openclaw-acp/
 
 # 3. На сервере перезапустить агента
 pm2 restart agentpulse-seller
@@ -337,7 +337,7 @@ git commit -m "Описание изменений"
 git push
 
 # На сервере
-ssh root@literal:<REDACTED_SERVER_IP>
+ssh root@<YOUR_SERVER_IP>
 cd /root/AgentPulse
 git pull
 cd openclaw-acp
@@ -351,7 +351,7 @@ cd c:\Users\Pc\Desktop\AgentPulse\openclaw-acp
 npm run setup
 
 # Скопировать config.json на сервер
-scp c:\Users\Pc\Desktop\AgentPulse\openclaw-acp\config.json root@literal:<REDACTED_SERVER_IP>:/root/AgentPulse/openclaw-acp/
+scp c:\Users\Pc\Desktop\AgentPulse\openclaw-acp\config.json root@<YOUR_SERVER_IP>:/root/AgentPulse/openclaw-acp/
 
 # На сервере
 pm2 restart agentpulse-seller
@@ -529,7 +529,7 @@ pm2 logs agentpulse-seller
 
 ```bash
 # 1. Подключиться к серверу
-ssh root@literal:<REDACTED_SERVER_IP>
+ssh root@<YOUR_SERVER_IP>
 
 # 2. Проверить статус PM2
 pm2 status
@@ -602,7 +602,7 @@ npm install
 
 # 3. Скопировать config.json с компьютера
 # (выполнить с локального компьютера)
-# scp c:\Users\Pc\Desktop\AgentPulse\openclaw-acp\config.json root@literal:<REDACTED_SERVER_IP>:/root/AgentPulse/openclaw-acp/
+# scp c:\Users\Pc\Desktop\AgentPulse\openclaw-acp\config.json root@<YOUR_SERVER_IP>:/root/AgentPulse/openclaw-acp/
 
 # 4. Запустить
 pm2 start "npx tsx src/seller/runtime/seller.ts" --name agentpulse-seller

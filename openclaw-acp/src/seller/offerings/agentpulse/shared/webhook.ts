@@ -2,7 +2,8 @@
  * Shared webhook utility for AgentPulse offerings
  */
 
-const WEBHOOK_URL = process.env.WEBHOOK_URL || 'http://localhost:3001/webhook/results';
+const WEBHOOK_URL = process.env.WEBHOOK_URL || '';
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || '';
 
 interface WebhookData {
   jobId?: string;
@@ -59,11 +60,16 @@ export async function sendResultToWebhook(data: WebhookData): Promise<void> {
     
     console.log(`[Webhook] Sending ${data.service} result to:`, WEBHOOK_URL);
     
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (WEBHOOK_SECRET) {
+      headers['Authorization'] = `Bearer ${WEBHOOK_SECRET}`;
+    }
+
     const response = await fetch(WEBHOOK_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(webhookPayload),
       signal: AbortSignal.timeout(5000) // 5 second timeout
     });
@@ -74,8 +80,8 @@ export async function sendResultToWebhook(data: WebhookData): Promise<void> {
       const text = await response.text();
       console.log(`[Webhook] ⚠️ Failed with status ${response.status}:`, text);
     }
-  } catch (error: any) {
-    // Webhook failure should not break the job
-    console.log('[Webhook] ⚠️ Error (non-critical):', error.message);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.log('[Webhook] Error (non-critical):', msg);
   }
 }

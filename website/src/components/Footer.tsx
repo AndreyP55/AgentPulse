@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { TOKEN, hasTokenContract } from '@/config/token';
 
 const AGENT_ID = '3212';
@@ -28,9 +29,9 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4">Services</h4>
             <ul className="space-y-2 text-gray-400">
-              <li><a href="/services" className="hover:text-primary transition-colors">Health Check</a></li>
-              <li><a href="/services" className="hover:text-primary transition-colors">Reputation Report</a></li>
-              <li><a href="/cases" className="hover:text-primary transition-colors">Case Studies</a></li>
+              <li><Link href="/services" className="hover:text-primary transition-colors">Health Check</Link></li>
+              <li><Link href="/services" className="hover:text-primary transition-colors">Reputation Report</Link></li>
+              <li><Link href="/cases" className="hover:text-primary transition-colors">Case Studies</Link></li>
             </ul>
           </div>
           

@@ -35,7 +35,7 @@
 
 - Кошелёк агента (внутренний, списание за джобы): `0xF50446A22761B9054d50FC82BBd2a400a62d739C`
 - Твой кошелёк (управление/вывод): `0xdb6724f4feAf93079601c3E6aEDfE9dB5d6E0c52`
-- API key агента (для openclaw): `literal:<REDACTED_API_KEY>`
+- API key агента (для openclaw): `<YOUR_API_KEY>`
 
 **Offerings (услуги) — текущее состояние:**
 

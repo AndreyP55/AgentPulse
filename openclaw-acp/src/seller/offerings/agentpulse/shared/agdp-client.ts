@@ -171,18 +171,15 @@ async function tryApiMethod(agentId: string): Promise<AgentMetrics | null> {
       console.log('[AGDP Client] ✅ API data retrieved successfully!');
       console.log(`[AGDP Client] Agent: ${data.name}, Jobs: ${data.successfulJobCount}, Revenue: $${data.revenue}`);
       
-      // Calculate success rate if not provided (their API has bug returning 0)
-      const calculatedSuccessRate = data.successfulJobCount > 0 
-        ? Math.min(100, (data.successfulJobCount / (data.successfulJobCount + 100)) * 100) // Estimate
+      // Use API success rate if available, otherwise estimate from total jobs
+      const totalJobs = (data.totalJobCount ?? data.successfulJobCount ?? 0);
+      const calculatedSuccessRate = data.successfulJobCount > 0 && totalJobs > 0
+        ? Math.min(100, (data.successfulJobCount / totalJobs) * 100)
         : 0;
       
-      // Parse lastActiveAt
       let lastJobTimestamp: number | null = null;
       if (data.lastActiveAt && data.lastActiveAt !== "2999-12-31T00:00:00.000Z") {
         lastJobTimestamp = new Date(data.lastActiveAt).getTime();
-      } else if (data.successfulJobCount > 0) {
-        // Estimate from recent activity - if has jobs, assume active
-        lastJobTimestamp = Date.now() - (6 * 60 * 60 * 1000); // 6 hours ago estimate
       }
       
       // Fetch rank from leaderboard
@@ -195,7 +192,7 @@ async function tryApiMethod(agentId: string): Promise<AgentMetrics | null> {
         jobsCompleted: data.successfulJobCount || 0,
         uniqueBuyers: data.uniqueBuyerCount || 0,
         revenue: data.revenue || 0,
-        rating: data.rating || 4.0, // Default if not provided
+        rating: data.rating ?? 0,
         rank: rank, // Now includes real leaderboard rank!
         lastJobTimestamp,
         offerings: [], // Would need separate API call
@@ -405,12 +402,9 @@ export async function fetchAgentMetrics(agentId: string): Promise<AgentMetrics> 
 }
 
 /**
- * Get current timestamp of agent's last activity (estimate)
+ * Returns null — we don't fabricate activity timestamps.
+ * Only real data from the API should be used.
  */
-export function estimateLastActivity(jobsCompleted: number): number | null {
-  if (jobsCompleted === 0) return null;
-  
-  // Estimate: If agent has jobs, assume last one was within 24h
-  // This is rough but better than nothing
-  return Date.now() - (Math.random() * 24 * 60 * 60 * 1000);
+export function estimateLastActivity(_jobsCompleted: number): number | null {
+  return null;
 }

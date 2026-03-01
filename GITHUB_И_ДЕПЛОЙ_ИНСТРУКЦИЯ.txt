@@ -278,7 +278,7 @@ RAM              | 1 GB       | 2 GB
    npm run setup
 
    Тебя спросят:
-   - API Key агента: literal:<REDACTED_API_KEY>
+   - API Key агента: <YOUR_API_KEY>
    - Остальное можно оставить по умолчанию
 
 

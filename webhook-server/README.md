@@ -37,7 +37,7 @@ pm2 restart agentpulse-seller
 
 ```json
 {
-  "url": "http://literal:<REDACTED_SERVER_IP>:3001/results"
+  "url": "http://<YOUR_SERVER_IP>:3001/results"
 }
 ```
 

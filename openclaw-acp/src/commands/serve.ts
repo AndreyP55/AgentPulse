@@ -133,13 +133,11 @@ export async function stop(): Promise<void> {
     output.fatal(`Failed to send SIGTERM to PID ${pid}: ${err.message}`);
   }
 
-  // Wait and verify
+  const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
+
   let stopped = false;
   for (let i = 0; i < 10; i++) {
-    const start = Date.now();
-    while (Date.now() - start < 200) {
-      /* busy wait 200ms */
-    }
+    await sleep(200);
     if (!isProcessRunning(pid)) {
       stopped = true;
       break;
@@ -212,29 +210,36 @@ export async function logs(
   const active = hasActiveFilter(filter);
 
   if (follow) {
-    const tail = spawn("tail", ["-f", SELLER_LOG_PATH], {
-      stdio: active ? ["ignore", "pipe", "pipe"] : "inherit",
-    });
+    let lastSize = 0;
+    try {
+      lastSize = fs.statSync(SELLER_LOG_PATH).size;
+    } catch { /* file may not exist yet */ }
 
-    if (active && tail.stdout) {
-      let buffer = "";
-      tail.stdout.on("data", (chunk: Buffer) => {
-        buffer += chunk.toString();
-        const lines = buffer.split("\n");
-        buffer = lines.pop()!;
-        for (const line of lines) {
-          if (matchesFilter(line, filter)) {
-            process.stdout.write(line + "\n");
+    const printNewContent = () => {
+      try {
+        const stat = fs.statSync(SELLER_LOG_PATH);
+        if (stat.size > lastSize) {
+          const fd = fs.openSync(SELLER_LOG_PATH, "r");
+          const buf = Buffer.alloc(stat.size - lastSize);
+          fs.readSync(fd, buf, 0, buf.length, lastSize);
+          fs.closeSync(fd);
+          lastSize = stat.size;
+          const text = buf.toString("utf-8");
+          const lines = text.split("\n");
+          for (const line of lines) {
+            if (line && (!active || matchesFilter(line, filter))) {
+              process.stdout.write(line + "\n");
+            }
           }
         }
-      });
-    }
+      } catch { /* ignore read errors */ }
+    };
 
-    // Keep running until user hits Ctrl+C
+    const interval = setInterval(printNewContent, 500);
+
     await new Promise<void>((resolve) => {
-      tail.on("close", () => resolve());
       process.on("SIGINT", () => {
-        tail.kill();
+        clearInterval(interval);
         resolve();
       });
     });

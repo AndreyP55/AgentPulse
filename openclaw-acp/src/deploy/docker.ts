@@ -7,7 +7,7 @@ export function generateDockerfile(): string {
   return `FROM node:20-slim
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm install --production=false
+RUN npm install
 COPY tsconfig.json ./
 COPY bin/ ./bin/
 COPY src/ ./src/

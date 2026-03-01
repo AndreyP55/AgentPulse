@@ -84,6 +84,22 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after {
+    animation: none !important;
+    opacity: 0.3;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 @layer utilities {
   .glow-cyan {
     box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);

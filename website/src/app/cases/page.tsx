@@ -1,6 +1,6 @@
 'use client';
 
-import { Shield, AlertTriangle, XCircle, TrendingUp, Users, DollarSign, Award, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface CaseData {

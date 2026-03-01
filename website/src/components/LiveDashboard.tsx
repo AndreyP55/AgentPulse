@@ -39,10 +39,10 @@ export default function LiveDashboard() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            📈 Real-Time Analytics
+            Platform Overview
           </h2>
           <p className="text-gray-400 text-lg">
-            Live monitoring of AI agent ecosystem
+            AI agent ecosystem monitoring stats
           </p>
         </div>
         
@@ -53,7 +53,7 @@ export default function LiveDashboard() {
                               stat.color === 'warning' ? 'text-warning' : 
                               'text-primary';
             const glowClass = stat.color === 'success' ? 'glow-success' : 
-                             stat.color === 'warning' ? 'border-warning/30' : 
+                             stat.color === 'warning' ? 'glow-danger' : 
                              'glow-cyan';
             
             return (

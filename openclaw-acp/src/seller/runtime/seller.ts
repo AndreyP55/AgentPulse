@@ -7,6 +7,9 @@
 //   (or)  acp serve start
 // =============================================================================
 
+import dotenv from "dotenv";
+dotenv.config();
+
 import { connectAcpSocket } from "./acpSocket.js";
 import { acceptOrRejectJob, requestPayment, deliverJob } from "./sellerApi.js";
 import { loadOffering, listOfferings } from "./offerings.js";
@@ -106,7 +109,7 @@ async function handleNewTask(data: AcpJobEventData): Promise<void> {
     }
 
     const negotiationMemo = data.memos.find(
-      (m) => m.id == Number(data.memoToSign)
+      (m) => m.id === Number(data.memoToSign)
     );
 
     if (negotiationMemo?.nextPhase !== AcpJobPhase.NEGOTIATION) {
@@ -180,6 +183,11 @@ async function handleNewTask(data: AcpJobEventData): Promise<void> {
       });
     } catch (err) {
       console.error(`[seller] Error processing job ${jobId}:`, err);
+      const errMsg = err instanceof Error ? err.message : String(err);
+      await acceptOrRejectJob(jobId, {
+        accept: false,
+        reason: `Processing failed: ${errMsg.slice(0, 200)}`,
+      });
     }
   }
 

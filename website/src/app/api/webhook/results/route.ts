@@ -25,8 +25,20 @@ interface WebhookResult {
 
 export async function POST(request: NextRequest) {
   try {
+    const authToken = process.env.WEBHOOK_SECRET;
+    if (authToken) {
+      const provided = request.headers.get('authorization')?.replace('Bearer ', '');
+      if (provided !== authToken) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+    }
+
     const data: WebhookResult = await request.json();
     
+    if (!data.jobId || !data.agentId || !data.service) {
+      return NextResponse.json({ error: 'Missing required fields: jobId, agentId, service' }, { status: 400 });
+    }
+
     console.log('[Webhook API] Received result:', {
       jobId: data.jobId,
       agentName: data.agentName,
@@ -68,10 +80,10 @@ export async function POST(request: NextRequest) {
       message: 'Result received and saved' 
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Webhook API] Error:', error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }
@@ -87,10 +99,10 @@ export async function GET() {
     const results = JSON.parse(content);
 
     return NextResponse.json(results);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Webhook API] Error reading results:', error);
     return NextResponse.json(
-      { error: error.message },
+      { error: 'Failed to read results' },
       { status: 500 }
     );
   }

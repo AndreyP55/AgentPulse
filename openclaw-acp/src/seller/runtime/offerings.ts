@@ -30,20 +30,26 @@ function resolveOfferingsRoot(agentDirName: string): string {
   return path.resolve(__dirname, "..", "offerings", agentDirName);
 }
 
+const offeringCache = new Map<string, LoadedOffering>();
+
 /**
  * Load a named offering from `src/seller/offerings/<agentDirName>/<name>/`.
  * Expects `offering.json` and `handlers.ts` in that directory.
+ * Results are cached to avoid repeated disk reads and dynamic imports.
  */
 export async function loadOffering(
   offeringName: string,
   agentDirName: string
 ): Promise<LoadedOffering> {
+  const cacheKey = `${agentDirName}/${offeringName}`;
+  const cached = offeringCache.get(cacheKey);
+  if (cached) return cached;
+
   const offeringDir = path.resolve(
     resolveOfferingsRoot(agentDirName),
     offeringName
   );
 
-  // offering.json
   const configPath = path.join(offeringDir, "offering.json");
   if (!fs.existsSync(configPath)) {
     throw new Error(`offering.json not found: ${configPath}`);
@@ -52,13 +58,11 @@ export async function loadOffering(
     fs.readFileSync(configPath, "utf-8")
   );
 
-  // handlers.ts (dynamically imported)
   const handlersPath = path.join(offeringDir, "handlers.ts");
   if (!fs.existsSync(handlersPath)) {
     throw new Error(`handlers.ts not found: ${handlersPath}`);
   }
 
-  // Windows Path Fix: Convert to file URL for dynamic import
   const handlersURL = pathToFileURL(handlersPath).href;
   const handlers = (await import(handlersURL)) as OfferingHandlers;
 
@@ -68,7 +72,9 @@ export async function loadOffering(
     );
   }
 
-  return { config, handlers };
+  const loaded = { config, handlers };
+  offeringCache.set(cacheKey, loaded);
+  return loaded;
 }
 
 /**

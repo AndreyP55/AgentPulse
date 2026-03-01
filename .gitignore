@@ -24,3 +24,9 @@ Thumbs.db
 # Временные файлы
 *.tmp
 *.temp
+
+# Секреты и ключи
+ApiAgentaVirt.txt
+**/secrets/
+*.key
+*.pem

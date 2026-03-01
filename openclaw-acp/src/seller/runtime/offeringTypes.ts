@@ -40,7 +40,7 @@ export type ValidationResult = boolean | { valid: boolean; reason?: string };
  *   requestAdditionalFunds(request) => { content, amount, tokenAddress, recipient }
  */
 export interface OfferingHandlers {
-  executeJob: (request: Record<string, any>) => Promise<ExecuteJobResult>;
+  executeJob: (request: Record<string, any>, context?: Record<string, any>) => Promise<ExecuteJobResult>;
   validateRequirements?: (request: Record<string, any>) => ValidationResult;
   requestPayment?: (request: Record<string, any>) => string;
   requestAdditionalFunds?: (request: Record<string, any>) => {

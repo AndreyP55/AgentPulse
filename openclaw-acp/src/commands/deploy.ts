@@ -286,7 +286,7 @@ export async function deploy(): Promise<void> {
     } catch {
       output.warn(
         "Could not set LITE_AGENT_API_KEY. Set it manually:\n" +
-          "  acp serve deploy railway env set LITE_AGENT_API_KEY=" + apiKey
+          "  acp serve deploy railway env set LITE_AGENT_API_KEY=<your-api-key>"
       );
     }
   }

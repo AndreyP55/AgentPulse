@@ -44,7 +44,7 @@ vercel deploy --prod
 
 #### B) Настрой переменную окружения на сервере:
 ```bash
-ssh root@literal:<REDACTED_SERVER_IP>
+ssh root@<YOUR_SERVER_IP>
 cd /root/AgentPulse/openclaw-acp
 
 # Создай .env файл:

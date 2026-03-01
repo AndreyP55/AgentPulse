@@ -88,7 +88,7 @@ git push
 ### 2.1. Подключиться по SSH
 
 ```bash
-ssh root@literal:<REDACTED_SERVER_IP>
+ssh root@<YOUR_SERVER_IP>
 ```
 
 (или твой пользователь/хост)

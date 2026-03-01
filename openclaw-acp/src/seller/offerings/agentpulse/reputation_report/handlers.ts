@@ -75,17 +75,22 @@ function calculateOverallScore(data: AgentData): number {
 }
 
 /**
- * Analyze trends (mock for now - would need historical data)
+ * Analyze trends — estimated from current metrics (no historical data available yet).
  */
 function analyzeTrends(data: AgentData): {
   jobsGrowth: string;
   revenueGrowth: string;
   ratingTrend: string;
 } {
-  // Mock trends - in real implementation would compare with previous period
-  const jobsGrowth = data.jobsCompleted > 50 ? "+25%" : "+10%";
-  const revenueGrowth = data.revenue > 100 ? "+40%" : "+15%";
-  const ratingTrend = data.averageRating >= 4.5 ? "improving" : "stable";
+  const jobsGrowth = data.jobsCompleted > 100 ? "high activity"
+    : data.jobsCompleted > 20 ? "moderate activity"
+    : "low activity";
+  const revenueGrowth = data.revenue > 200 ? "strong revenue"
+    : data.revenue > 50 ? "moderate revenue"
+    : "early stage";
+  const ratingTrend = data.averageRating >= 4.5 ? "excellent"
+    : data.averageRating >= 3.5 ? "good"
+    : "needs improvement";
   
   return {
     jobsGrowth,
@@ -324,7 +329,7 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
         uniqueBuyers: agentData.uniqueBuyers,
         totalRevenue: agentData.revenue,
         averageRating: agentData.averageRating,
-        responseTime: "~15s", // Mock
+        responseTime: "N/A",
         offerings: agentData.offerings.length
       },
       trends,
@@ -350,8 +355,8 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
     console.log('[Reputation Report] Weaknesses:', weaknesses.length);
     console.log('[Reputation Report] Recommendations:', recommendations.length);
     
-    // Send to webhook for Butler resources (full reputation data for Resource)
-    await sendResultToWebhook({
+    // Send to webhook (non-blocking)
+    sendResultToWebhook({
       jobId: context?.jobId?.toString(),
       agentId,
       agentName: agentData.agentName,
@@ -373,7 +378,9 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
       weaknesses,
       trends,
       competitivePosition
-    });
+    }).catch(err => 
+      console.log('[Reputation Report] Webhook error (non-critical):', err.message)
+    );
     
     // JSON for agents + human_summary for Butler/humans (both audiences)
     const strengthsBlock = strengths.length
@@ -405,77 +412,6 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
     console.error('[Reputation Report] Error:', error);
     throw new Error(`Reputation analysis failed: ${error.message}`);
   }
-}
-
-/**
- * Format reputation report as readable table
- */
-function formatReputationReport(data: any): string {
-  const { agentName, period, overallScore, metrics, trends, strengths, weaknesses, recommendations, competitivePosition, summary } = data;
-  
-  return `
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                        REPUTATION REPORT - ${agentName}                        
-╚══════════════════════════════════════════════════════════════════════════════╝
-
-📊 OVERALL SCORE: ${overallScore}/100
-📅 Analysis Period: ${period}
-⏰ Analyzed: ${new Date(data.timestamp).toLocaleString()}
-
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ KEY METRICS                                                                  │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ Success Rate:        ${metrics.successRate.toFixed(2)}%                      
-│ Jobs Completed:      ${metrics.jobsCompleted.toLocaleString()}              
-│ Unique Buyers:       ${metrics.uniqueBuyers}                                
-│ Total Revenue:       $${metrics.totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-│ Average Rating:      ${metrics.averageRating}/5 ⭐                           
-│ Response Time:       ${metrics.responseTime}                                
-└─────────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ TRENDS                                                                       │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ Jobs Growth:         ${trends.jobsGrowth}                                   
-│ Revenue Growth:      ${trends.revenueGrowth}                                
-│ Rating Trend:        ${trends.ratingTrend}                                  
-└─────────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ ✅ STRENGTHS                                                                 │
-├─────────────────────────────────────────────────────────────────────────────┤
-${strengths.map((s: string, i: number) => `│ ${i + 1}. ${s.padEnd(73)}│`).join('\n')}
-└─────────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ ⚠️  WEAKNESSES                                                               │
-├─────────────────────────────────────────────────────────────────────────────┤
-${weaknesses.map((w: string, i: number) => `│ ${i + 1}. ${w.padEnd(73)}│`).join('\n')}
-└─────────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 💡 RECOMMENDATIONS                                                           │
-├─────────────────────────────────────────────────────────────────────────────┤
-${recommendations.map((r: string, i: number) => `│ ${i + 1}. ${r.padEnd(73)}│`).join('\n')}
-└─────────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ COMPETITIVE POSITION                                                         │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ Market Rank:         #${competitivePosition.rank}                           
-│ Category:            ${competitivePosition.category}                        
-│ Pricing:             ${competitivePosition.pricingVsMarket}                 
-└─────────────────────────────────────────────────────────────────────────────┘
-
-📝 SUMMARY: ${summary}
-
-🔄 Next Check Recommended: ${data.nextCheckRecommended}
-🤖 Analyzed by: ${data.analyzedBy}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Need a quick health check? Try AgentPulse health_check for 0.25 USDC!
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-`.trim();
 }
 
 /**

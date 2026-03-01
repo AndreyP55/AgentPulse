@@ -1,4 +1,4 @@
-import { Target, Cpu, Database, Zap, CheckCircle } from 'lucide-react';
+import { Target, Cpu } from 'lucide-react';
 
 const roadmap = [
   { phase: 'Q1 2026', status: 'completed', items: ['Health Check', 'Reputation Report'] },

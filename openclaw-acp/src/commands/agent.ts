@@ -44,16 +44,15 @@ function confirmPrompt(prompt: string): Promise<boolean> {
   });
 }
 
-function killSellerProcess(pid: number): boolean {
+async function killSellerProcess(pid: number): Promise<boolean> {
   try {
     process.kill(pid, "SIGTERM");
   } catch {
     return false;
   }
-  // Wait up to 2 seconds for process to stop
+  const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
   for (let i = 0; i < 10; i++) {
-    const start = Date.now();
-    while (Date.now() - start < 200) { /* busy wait */ }
+    await sleep(200);
     if (!isProcessRunning(pid)) {
       removePidFromConfig();
       return true;

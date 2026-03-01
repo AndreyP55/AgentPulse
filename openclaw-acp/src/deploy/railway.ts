@@ -133,8 +133,11 @@ export function login(): void {
 }
 
 export function initProject(name?: string): void {
-  const cmd = name ? `railway init --name "${name}"` : "railway init";
-  execSync(cmd, { ...EXEC_OPTS, stdio: "inherit" });
+  if (name) {
+    execSync("railway init --name " + JSON.stringify(name), { ...EXEC_OPTS, stdio: "inherit" });
+  } else {
+    execSync("railway init", { ...EXEC_OPTS, stdio: "inherit" });
+  }
 }
 
 /** Link the named service so subsequent CLI commands (variables, logs, etc.) target it. */
@@ -161,7 +164,8 @@ export function hasLinkedService(): boolean {
 // -- Variables --
 
 export function setVariable(key: string, value: string): void {
-  execSync(`railway variables set ${key}="${value}"`, {
+  const safeKey = key.replace(/[^A-Za-z0-9_]/g, "");
+  execSync(`railway variables set ${safeKey}=${JSON.stringify(value)}`, {
     ...EXEC_OPTS,
     stdio: ["pipe", "pipe", "pipe"],
   });
@@ -246,7 +250,6 @@ export function streamLogs(
       child.kill();
     });
     child.on("close", () => process.exit(0));
-    child.unref();
     child.ref();
   } else {
     if (active) {

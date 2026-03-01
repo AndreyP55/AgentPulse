@@ -20,6 +20,11 @@ export async function GET() {
     const data = await response.json();
     const agent = data.data;
 
+    const lastActive = agent.lastActiveAt;
+    const isOnline = lastActive && lastActive !== "2999-12-31T00:00:00.000Z"
+      ? (Date.now() - new Date(lastActive).getTime()) < 24 * 60 * 60 * 1000
+      : false;
+
     return NextResponse.json({
       success: true,
       agent: {
@@ -31,20 +36,19 @@ export async function GET() {
         uniqueBuyers: agent.uniqueBuyerCount,
         rating: agent.rating,
         rank: agent.rank,
-        isOnline: true,
-        lastActive: agent.lastActiveAt
+        isOnline,
+        lastActive
       },
       lastUpdated: new Date().toISOString()
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[API] Error fetching agent metrics:', error);
     
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to fetch agent metrics',
-        message: error.message
+        error: 'Failed to fetch agent metrics'
       },
       { status: 500 }
     );
