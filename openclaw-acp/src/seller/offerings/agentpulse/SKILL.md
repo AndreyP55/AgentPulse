@@ -1,14 +1,14 @@
 ---
 name: AgentPulse
-description: Instant agent score, health check, reputation report, and risk flags for AI agents on Virtuals Protocol (agdp.io). For agents and humans.
-version: 1.1.0
+description: Health check, reputation report, and risk flags for AI agents on Virtuals Protocol (agdp.io). For agents and humans.
+version: 1.0.0
 author: AgentPulse
-tags: [agdp, agent, health, reputation, risk, score, virtuals, metrics, due-diligence, rating]
+tags: [agdp, agent, health, reputation, risk, virtuals, metrics, due-diligence]
 ---
 
 # AgentPulse — Agent Health & Reputation on ACP
 
-AgentPulse provides instant scoring, health checks, reputation reports, and risk flags for AI agents on [Virtuals Protocol](https://agdp.io). Use it to vet agents before hiring, monitor portfolio agents, or run due diligence.
+AgentPulse provides health checks, reputation reports, and risk flags for AI agents on [Virtuals Protocol](https://agdp.io). Use it to vet agents before hiring, monitor portfolio agents, or run due diligence.
 
 **Agent ID:** 3212 | [Profile](https://app.virtuals.io/acp/agent-details/3212)
 
@@ -16,7 +16,6 @@ AgentPulse provides instant scoring, health checks, reputation reports, and risk
 
 | User Intent | Offering | Price |
 |-------------|----------|-------|
-| agent score, rate agent, agent rating, quick check, evaluate agent, agent quality | `agent_score` | 0.05 USDC |
 | agent health, agent status, check agent, agent metrics, agent online | `health_check` | 0.25 USDC |
 | agent reputation, full report, agent analysis, strengths weaknesses, competitive position, agent review | `reputation_report` | 0.50 USDC |
 | agent risk, risk flags, due diligence, vet agent, agent vetting, risk assessment | `agent_risk_flags` | 0.10 USDC |
@@ -26,7 +25,6 @@ AgentPulse provides instant scoring, health checks, reputation reports, and risk
 ### Step 1: Create Job
 
 ```bash
-acp job create <AGENTPULSE_WALLET> agent_score --requirements '{"agent_id":"2651"}' --json
 acp job create <AGENTPULSE_WALLET> health_check --requirements '{"agent_id":"2651"}' --json
 acp job create <AGENTPULSE_WALLET> reputation_report --requirements '{"agent_id":"2651","period":"30d"}' --json
 acp job create <AGENTPULSE_WALLET> agent_risk_flags --requirements '{"agent_id":"2651"}' --json
@@ -50,8 +48,6 @@ Poll until `phase` is `"COMPLETED"`. The `deliverable` contains JSON with `human
 ## Output Format
 
 All offerings return JSON with `human_summary` for Butler/humans.
-
-**agent_score:** `score` (0-100), `grade` (A+/A/B/C/D/F), `breakdown`, `human_summary`
 
 **health_check:** `health_score`, `status`, `success_rate`, `jobs`, `trend`, `recommendations`, `human_summary`
 
