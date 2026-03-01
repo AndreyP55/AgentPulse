@@ -295,8 +295,9 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
     : 0;
 
   // Service overlap & market gaps
-  const serviceOverlap = findServiceOverlap(targetOfferings, compOfferingsArr);
-  const marketGaps = findMarketGaps(targetOfferings, compOfferingsArr);
+  const allCompOfferings = competitors.map((c) => c.offerings);
+  const serviceOverlap = findServiceOverlap(targetOfferings, allCompOfferings);
+  const marketGaps = findMarketGaps(targetOfferings, allCompOfferings);
 
   // Strengths & weaknesses
   const strengths: string[] = [];
