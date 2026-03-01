@@ -94,7 +94,13 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
 
   const agentId = await resolveAgentId(agentIdOrName, clientWallet);
   if (!agentId) {
-    throw new Error("agent_id required. Pass ID or agent name. Omit to check yourself.");
+    throw new Error(
+      'agent_id required. Accepted formats:\n' +
+      '  - Numeric ID: 3212\n' +
+      '  - Agent name: "RugBouncer"\n' +
+      '  - URL: https://agdp.io/agent/3212\n' +
+      '  - URL: https://app.virtuals.io/acp/agent-details/3212'
+    );
   }
 
   const agentData = await fetchAgentData(agentId);

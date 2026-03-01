@@ -56,17 +56,42 @@ async function getActiveEpochId(): Promise<number> {
 }
 
 /**
- * Resolve agent ID from: numeric ID, agent name, or client wallet (fallback)
+ * Extract agent ID from URLs like:
+ *   agdp.io/agent/3212
+ *   https://agdp.io/agent/3212
+ *   app.virtuals.io/acp/agent-details/3212
+ *   https://app.virtuals.io/acp/agent-details/3212
+ */
+function extractIdFromUrl(input: string): string | null {
+  const patterns = [
+    /agdp\.io\/agent\/(\d+)/,
+    /app\.virtuals\.io\/acp\/agent-details\/(\d+)/,
+    /virtuals\.io\/.*?\/(\d+)/,
+  ];
+  for (const pattern of patterns) {
+    const match = input.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+/**
+ * Resolve agent ID from: numeric ID, URL, agent name, or client wallet (fallback)
  */
 export async function resolveAgentId(
   agentIdOrName: string | number | undefined | null,
   clientWallet?: string | null
 ): Promise<string | null> {
-  // 1. Numeric ID
   if (agentIdOrName !== undefined && agentIdOrName !== null && agentIdOrName !== '') {
     const s = String(agentIdOrName).trim();
+
+    // 1. Numeric ID
     if (/^\d+$/.test(s)) return s;
-    // 2. Agent name -> search by name (prefer agent with most activity when duplicates exist)
+
+    // 2. URL containing agent ID
+    const fromUrl = extractIdFromUrl(s);
+    if (fromUrl) return fromUrl;
+    // 3. Agent name -> search by name (prefer agent with most activity when duplicates exist)
     try {
       const enc = encodeURIComponent(s);
       const res = await axios.get(
@@ -88,7 +113,7 @@ export async function resolveAgentId(
       /* ignore */
     }
   }
-  // 3. Fallback: find agent by client wallet
+  // 4. Fallback: find agent by client wallet
   if (clientWallet && /^0x[a-fA-F0-9]{40}$/.test(clientWallet)) {
     try {
       const enc = encodeURIComponent(clientWallet);
