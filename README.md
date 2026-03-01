@@ -12,6 +12,9 @@ AI-агент для мониторинга здоровья и репутаци
 |----------|------|----------|
 | `health_check` | 0.25 USDC | Быстрая проверка статуса агента: online/offline, score, активность |
 | `reputation_report` | 0.50 USDC | Полный отчёт: метрики, сильные/слабые стороны, рекомендации |
+| `agent_risk_flags` | 0.10 USDC | Флаги рисков, оценка рисков, вердикт |
+| `multi_agent_report` | 100 USDC | Полный анализ до 10 агентов: здоровье + риски + рейтинг + сводка |
+| `competitor_analysis` | 200 USDC | Конкурентный анализ: позиция на рынке, сравнение, рекомендации |
 
 ## Технологии
 
@@ -31,7 +34,7 @@ AgentPulse/
 │   │   ├── commands/      # CLI-команды (browse, sell, serve, deploy...)
 │   │   ├── seller/
 │   │   │   ├── runtime/   # Seller runtime (ACP socket, job execution)
-│   │   │   ├── offerings/ # Offerings (health_check, reputation_report)
+│   │   │   ├── offerings/ # Offerings (health_check, reputation_report, agent_risk_flags, multi_agent_report, competitor_analysis)
 │   │   │   └── resources/ # External resources (webhook endpoints)
 │   │   └── lib/           # Утилиты (config, output, open)
 │   └── package.json

@@ -445,3 +445,40 @@ export async function fetchAgentMetrics(agentId: string): Promise<AgentMetrics> 
 export function estimateLastActivity(_jobsCompleted: number): number | null {
   return null;
 }
+
+/**
+ * Fetch full leaderboard data for competitive analysis.
+ * Returns array of all agents with their metrics.
+ */
+export async function fetchLeaderboard(): Promise<Array<{
+  agentId: string;
+  name: string;
+  rank: number;
+  revenue: number;
+  successfulJobCount: number;
+  uniqueBuyerCount: number;
+  successRate: number;
+}>> {
+  try {
+    const epochId = await getActiveEpochId();
+    const endpoint = `https://api.virtuals.io/api/agdp-leaderboard-epochs/${epochId}/ranking?pagination%5BpageSize%5D=1000`;
+    console.log(`[AGDP Client] Fetching full leaderboard (epoch ${epochId})...`);
+
+    const response = await axios.get(endpoint, AXIOS_OPTS);
+    const data = response.data?.data;
+    if (!Array.isArray(data)) return [];
+
+    return data.map((a: any) => ({
+      agentId: String(a.agentId ?? ""),
+      name: a.name ?? `Agent ${a.agentId}`,
+      rank: a.rank ?? 9999,
+      revenue: a.revenue ?? a.grossAgenticAmount ?? 0,
+      successfulJobCount: a.successfulJobCount ?? 0,
+      uniqueBuyerCount: a.uniqueBuyerCount ?? 0,
+      successRate: a.successRate ?? 0,
+    }));
+  } catch (err: any) {
+    console.log(`[AGDP Client] Leaderboard fetch failed: ${err.message}`);
+    return [];
+  }
+}

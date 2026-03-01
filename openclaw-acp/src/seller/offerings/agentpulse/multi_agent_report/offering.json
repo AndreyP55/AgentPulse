@@ -1,0 +1,16 @@
+{
+  "name": "multi_agent_report",
+  "description": "Full analysis of up to 10 agents in one report. Health check + risk flags + scoring for each agent, plus portfolio summary with rankings, red flags, and recommendations. Triggers: multi agent report, bulk check, portfolio audit, check multiple agents, batch analysis. Pass agent_ids array. 100 USDC.",
+  "jobFee": 100,
+  "jobFeeType": "fixed",
+  "slaMinutes": 10,
+  "requiredFunds": false,
+  "deliverable": "string",
+  "requirements": {
+    "agent_ids": {
+      "type": "string",
+      "description": "Comma-separated list of agent IDs (up to 10). Example: '3212,4029,2651,1589'",
+      "required": true
+    }
+  }
+}

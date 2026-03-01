@@ -1,0 +1,16 @@
+{
+  "name": "competitor_analysis",
+  "description": "Deep competitive analysis for an AI agent. Finds competitors on the leaderboard, compares metrics (revenue, jobs, success rate, pricing), shows market position (percentile), strengths vs competitors, and actionable recommendations. Triggers: competitor analysis, competitive report, market position, agent benchmark, compare agents. Pass agent_id. 200 USDC.",
+  "jobFee": 200,
+  "jobFeeType": "fixed",
+  "slaMinutes": 10,
+  "requiredFunds": false,
+  "deliverable": "string",
+  "requirements": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent ID (numeric from agdp.io/agent/YOUR_ID) to analyze competitively.",
+      "required": true
+    }
+  }
+}
