@@ -26,6 +26,8 @@ interface AgentAnalysis {
   rank: number | null;
   uniqueBuyers: number;
   lastActive: string;
+  revenuePerJob: number;
+  revenuePerBuyer: number;
 }
 
 function computeHealthScore(metrics: any): { score: number; status: string } {
@@ -156,6 +158,9 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
         else lastActive = `${Math.round(hours / 24)}d ago`;
       }
 
+      const rpj = metrics.jobsCompleted > 0 ? metrics.revenue / metrics.jobsCompleted : 0;
+      const rpb = metrics.uniqueBuyers > 0 ? metrics.revenue / metrics.uniqueBuyers : 0;
+
       analyses.push({
         agentId,
         agentName: metrics.agentName,
@@ -170,6 +175,8 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
         rank: metrics.rank,
         uniqueBuyers: metrics.uniqueBuyers,
         lastActive,
+        revenuePerJob: rpj,
+        revenuePerBuyer: rpb,
       });
     } catch (err: any) {
       errors.push(`Agent ${agentId}: ${err.message}`);
@@ -207,22 +214,42 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
     recommendations.push(`Consider replacing ${worst.agentName} (score: ${worst.healthScore}) — lowest performer.`);
   }
 
+  // Status grouping
+  const healthyAgents = analyses.filter((a) => a.healthStatus === "healthy");
+  const warningAgents = analyses.filter((a) => a.healthStatus === "warning");
+  const lowRiskAgents = analyses.filter((a) => a.riskVerdict === "low_risk");
+  const medRiskAgents = analyses.filter((a) => a.riskVerdict === "medium_risk");
+
+  // Top/Bottom highlights
+  const topByRevenue = [...analyses].sort((a, b) => b.revenue - a.revenue).slice(0, 3);
+  const topByJobs = [...analyses].sort((a, b) => b.jobsCompleted - a.jobsCompleted).slice(0, 3);
+  const topByEfficiency = [...analyses].sort((a, b) => b.revenuePerJob - a.revenuePerJob).slice(0, 3);
+  const bottomByHealth = [...analyses].sort((a, b) => a.healthScore - b.healthScore).slice(0, 3);
+
   const agentLines = sorted.map((a, i) => {
     const icon = a.healthStatus === "healthy" ? "🟢" : a.healthStatus === "warning" ? "🟡" : "🔴";
-    return `${i + 1}. ${icon} ${a.agentName} (ID:${a.agentId}) — Health: ${a.healthScore}/100, Risk: ${a.riskScore}/100 (${a.riskVerdict}), Jobs: ${a.jobsCompleted}, Revenue: $${a.revenue.toFixed(2)}`;
+    return `${i + 1}. ${icon} ${a.agentName} (ID:${a.agentId}) — Health: ${a.healthScore}/100, Risk: ${a.riskScore}/100 (${a.riskVerdict}), Jobs: ${a.jobsCompleted}, Rev: $${a.revenue.toFixed(2)}, $/job: $${a.revenuePerJob.toFixed(2)}`;
   });
 
   const humanSummary =
     `📋 MULTI-AGENT REPORT (${analyses.length} agents)\n` +
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
     `📊 Portfolio Health: ${avgHealth}/100 | Avg Risk: ${avgRisk}/100\n` +
     `💼 Total Jobs: ${totalJobs.toLocaleString()} | Total Revenue: $${totalRevenue.toFixed(2)}\n` +
     `🏆 Best: ${best.agentName} (${best.healthScore}/100)\n` +
     `⚠️ Worst: ${worst.agentName} (${worst.healthScore}/100)\n` +
-    `${criticalAgents.length > 0 ? `🔴 Critical: ${criticalAgents.length} agent(s)\n` : ""}` +
-    `${highRiskAgents.length > 0 ? `🚩 High Risk: ${highRiskAgents.length} agent(s)\n` : ""}` +
-    `\n📈 Rankings:\n${agentLines.join("\n")}\n` +
-    `\n💡 Recommendations:\n${recommendations.map((r, i) => `${i + 1}. ${r}`).join("\n")}` +
+    `\n📊 Status Breakdown:\n` +
+    `  Health: 🟢 ${healthyAgents.length} healthy | 🟡 ${warningAgents.length} warning | 🔴 ${criticalAgents.length} critical\n` +
+    `  Risk: 🟢 ${lowRiskAgents.length} low | 🟡 ${medRiskAgents.length} medium | 🔴 ${highRiskAgents.length} high\n` +
+    `\n⚡ Efficiency:\n` +
+    `  Avg $/job: $${analyses.length > 0 ? (analyses.reduce((s, a) => s + a.revenuePerJob, 0) / analyses.length).toFixed(2) : "0"}\n` +
+    `  Avg $/buyer: $${analyses.length > 0 ? (analyses.reduce((s, a) => s + a.revenuePerBuyer, 0) / analyses.length).toFixed(2) : "0"}\n` +
+    `\n🏅 Top 3 by Revenue: ${topByRevenue.map((a) => `${a.agentName} ($${a.revenue.toFixed(2)})`).join(", ")}\n` +
+    `🏅 Top 3 by Jobs: ${topByJobs.map((a) => `${a.agentName} (${a.jobsCompleted})`).join(", ")}\n` +
+    `🏅 Top 3 by Efficiency: ${topByEfficiency.map((a) => `${a.agentName} ($${a.revenuePerJob.toFixed(2)}/job)`).join(", ")}\n` +
+    `🔻 Bottom 3 by Health: ${bottomByHealth.map((a) => `${a.agentName} (${a.healthScore}/100)`).join(", ")}\n` +
+    `\n📈 Full Rankings:\n${agentLines.join("\n")}\n` +
+    `\n💡 Recommendations:\n${recommendations.map((r, i) => `  ${i + 1}. ${r}`).join("\n")}` +
     `${errors.length > 0 ? `\n\n⚠️ Errors (${errors.length}): ${errors.join("; ")}` : ""}`;
 
   const deliverable = {
@@ -235,6 +262,24 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
     worst_agent: { name: worst.agentName, id: worst.agentId, score: worst.healthScore },
     critical_count: criticalAgents.length,
     high_risk_count: highRiskAgents.length,
+    status_breakdown: {
+      healthy: healthyAgents.length,
+      warning: warningAgents.length,
+      critical: criticalAgents.length,
+      low_risk: lowRiskAgents.length,
+      medium_risk: medRiskAgents.length,
+      high_risk: highRiskAgents.length,
+    },
+    efficiency: {
+      avg_revenue_per_job: analyses.length > 0 ? analyses.reduce((s, a) => s + a.revenuePerJob, 0) / analyses.length : 0,
+      avg_revenue_per_buyer: analyses.length > 0 ? analyses.reduce((s, a) => s + a.revenuePerBuyer, 0) / analyses.length : 0,
+    },
+    highlights: {
+      top_by_revenue: topByRevenue.map((a) => ({ name: a.agentName, id: a.agentId, revenue: a.revenue })),
+      top_by_jobs: topByJobs.map((a) => ({ name: a.agentName, id: a.agentId, jobs: a.jobsCompleted })),
+      top_by_efficiency: topByEfficiency.map((a) => ({ name: a.agentName, id: a.agentId, rpj: a.revenuePerJob })),
+      bottom_by_health: bottomByHealth.map((a) => ({ name: a.agentName, id: a.agentId, score: a.healthScore })),
+    },
     rankings: sorted.map((a) => ({
       agent_id: a.agentId,
       agent_name: a.agentName,
@@ -249,6 +294,8 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
       rank: a.rank,
       unique_buyers: a.uniqueBuyers,
       last_active: a.lastActive,
+      revenue_per_job: a.revenuePerJob,
+      revenue_per_buyer: a.revenuePerBuyer,
     })),
     recommendations,
     errors: errors.length > 0 ? errors : undefined,

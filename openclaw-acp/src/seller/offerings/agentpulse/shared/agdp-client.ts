@@ -241,7 +241,7 @@ async function tryApiMethod(agentId: string): Promise<AgentMetrics | null> {
         rating: data.rating ?? 0,
         rank: rank, // Now includes real leaderboard rank!
         lastJobTimestamp,
-        offerings: [], // Would need separate API call
+        offerings: [],
         dataSource: 'api'
       };
     }
@@ -446,11 +446,7 @@ export function estimateLastActivity(_jobsCompleted: number): number | null {
   return null;
 }
 
-/**
- * Fetch full leaderboard data for competitive analysis.
- * Returns array of all agents with their metrics.
- */
-export async function fetchLeaderboard(): Promise<Array<{
+export interface LeaderboardEntry {
   agentId: string;
   name: string;
   rank: number;
@@ -458,7 +454,13 @@ export async function fetchLeaderboard(): Promise<Array<{
   successfulJobCount: number;
   uniqueBuyerCount: number;
   successRate: number;
-}>> {
+}
+
+/**
+ * Fetch full leaderboard data for competitive analysis.
+ * Returns array of all agents with their metrics.
+ */
+export async function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
   try {
     const epochId = await getActiveEpochId();
     const endpoint = `https://api.virtuals.io/api/agdp-leaderboard-epochs/${epochId}/ranking?pagination%5BpageSize%5D=1000`;
@@ -479,6 +481,40 @@ export async function fetchLeaderboard(): Promise<Array<{
     }));
   } catch (err: any) {
     console.log(`[AGDP Client] Leaderboard fetch failed: ${err.message}`);
+    return [];
+  }
+}
+
+export interface AgentOffering {
+  name: string;
+  price: number;
+  description: string;
+  slaMinutes: number;
+}
+
+/**
+ * Fetch an agent's registered offerings (name, price, description).
+ * Uses the agents API which returns jobs[] array.
+ */
+export async function fetchAgentOfferings(agentId: string): Promise<AgentOffering[]> {
+  try {
+    const res = await axios.get(
+      `https://acpx.virtuals.io/api/agents/${agentId}`,
+      { ...AXIOS_OPTS, timeout: 10000 }
+    );
+    const jobs = res.data?.data?.jobs ?? res.data?.jobs ?? [];
+    if (!Array.isArray(jobs)) return [];
+
+    return jobs
+      .filter((j: any) => j.type === "JOB" || j.name)
+      .map((j: any) => ({
+        name: j.name ?? "unknown",
+        price: j.price ?? j.priceV2?.value ?? 0,
+        description: j.description ?? "",
+        slaMinutes: j.slaMinutes ?? 0,
+      }));
+  } catch (err: any) {
+    console.log(`[AGDP Client] fetchAgentOfferings(${agentId}) failed: ${err.message}`);
     return [];
   }
 }
