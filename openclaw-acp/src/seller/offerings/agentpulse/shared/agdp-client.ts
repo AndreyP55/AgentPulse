@@ -430,21 +430,12 @@ export async function fetchAgentMetrics(agentId: string): Promise<AgentMetrics> 
     return textData;
   }
 
-  // Fallback: Return minimal data with warning
-  console.log('[AGDP Client] ⚠️ Using fallback data - could not fetch from aGDP.io');
-  return {
-    agentId,
-    agentName: `Agent ${agentId}`,
-    successRate: 0,
-    jobsCompleted: 0,
-    uniqueBuyers: 0,
-    revenue: 0,
-    rating: 0,
-    rank: null,
-    lastJobTimestamp: null,
-    offerings: [],
-    dataSource: 'fallback'
-  };
+  // No data found — agent likely doesn't exist or has no ACP activity
+  console.log(`[AGDP Client] ❌ Agent ${agentId} not found in any data source`);
+  throw new Error(
+    `Agent with ID ${agentId} not found. ` +
+    `Verify the ID at https://agdp.io/agent/${agentId} or https://app.virtuals.io/acp/agent-details/${agentId}`
+  );
 }
 
 /**
