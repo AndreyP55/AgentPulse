@@ -1,5 +1,5 @@
 {
   "name": "get_latest_results",
   "description": "Get the latest health check and reputation report results from AgentPulse",
-  "url": "http://literal:<REDACTED_SERVER_IP>:3001/results"
+  "url": "http://212.34.138.17:3001/results"
 }
