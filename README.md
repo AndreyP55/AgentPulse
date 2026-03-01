@@ -1,74 +1,80 @@
 # AgentPulse
 
-AI-агент в экосистеме Virtuals Protocol для мониторинга здоровья других агентов.
+AI-агент для мониторинга здоровья и репутации других агентов в экосистеме [Virtuals Protocol](https://virtuals.io).
 
-## Описание
+## Что это
 
-**AgentPulse** — это AI-агент, который работает на платформе [aGDP.io](https://agdp.io) и предоставляет услуги мониторинга и анализа других агентов через Agent Commerce Protocol (ACP).
+**AgentPulse** анализирует AI-агентов через [aGDP.io](https://agdp.io) API и предоставляет услуги через Agent Commerce Protocol (ACP). Другие агенты могут нанимать AgentPulse для проверки своих коллег.
 
-### Доступные услуги:
+### Услуги (Offerings)
 
-- **health_check** (0.25 USDC) — Быстрая проверка здоровья агента
-- **reputation_report** (0.5 USDC) — Полный отчёт о репутации агента
+| Offering | Цена | Описание |
+|----------|------|----------|
+| `health_check` | 0.25 USDC | Быстрая проверка статуса агента: online/offline, score, активность |
+| `reputation_report` | 0.50 USDC | Полный отчёт: метрики, сильные/слабые стороны, рекомендации |
 
 ## Технологии
 
-- Node.js + TypeScript
-- Virtuals Protocol (Base blockchain)
-- OpenClaw ACP Framework
-- aGDP.io API
+- **Runtime:** Node.js 20+, TypeScript
+- **Blockchain:** Virtuals Protocol (Base L2)
+- **Framework:** OpenClaw ACP
+- **Frontend:** Next.js 15, React 19, Tailwind CSS
+- **Backend:** Express 4.18 (webhook server)
+- **Process Manager:** PM2
 
-## Структура проекта
+## Структура
 
 ```
 AgentPulse/
-├── openclaw-acp/              # Основной код агента
+├── openclaw-acp/          # Агент (seller runtime, offerings, CLI)
 │   ├── src/
-│   │   └── seller/
-│   │       └── offerings/
-│   │           └── agentpulse/
-│   │               ├── health_check/
-│   │               ├── reputation_report/
-│   │               └── shared/
+│   │   ├── commands/      # CLI-команды (browse, sell, serve, deploy...)
+│   │   ├── seller/
+│   │   │   ├── runtime/   # Seller runtime (ACP socket, job execution)
+│   │   │   ├── offerings/ # Offerings (health_check, reputation_report)
+│   │   │   └── resources/ # External resources (webhook endpoints)
+│   │   └── lib/           # Утилиты (config, output, open)
 │   └── package.json
-└── README.md
+├── website/               # Next.js frontend (результаты, дашборд)
+│   ├── src/app/           # App Router pages & API routes
+│   └── package.json
+└── webhook-server/        # Express сервер для приёма результатов
+    ├── server.js
+    └── package.json
 ```
 
-## Установка
+## Быстрый старт
 
 ```bash
+# 1. Установка
 cd openclaw-acp
 npm install
-npm run setup
-```
 
-## Запуск локально
+# 2. Настройка
+cp .env.example .env
+# Заполнить API ключ в .env
 
-```bash
-cd openclaw-acp
+# 3. Запуск
 npx tsx src/seller/runtime/seller.ts
 ```
 
-## Деплой на сервер (VPS)
+## Деплой (VPS)
 
 ```bash
-# На сервере
+ssh root@<YOUR_SERVER_IP>
 cd /root/AgentPulse/openclaw-acp
-npm install
+git pull && npm install
 pm2 start "npx tsx src/seller/runtime/seller.ts" --name agentpulse-seller
-pm2 save
-pm2 startup
+pm2 save && pm2 startup
 ```
 
-## Документация
+## Переменные окружения
 
-- [MASTER_GUIDE.md](./MASTER_GUIDE.md) — Полное руководство
-- [AGENTPULSE_SPEC.md](./AGENTPULSE_SPEC.md) — Спецификация агента
-- [AGENTPULSE_SESSION_REPORT.md](./AGENTPULSE_SESSION_REPORT.md) — Отчёт по разработке
-
-## Автор
-
-Проект разработан для экосистемы Virtuals Protocol.
+| Переменная | Где | Описание |
+|------------|-----|----------|
+| `ACP_API_KEY` | openclaw-acp/.env | API ключ Virtuals Protocol |
+| `WEBHOOK_URL` | openclaw-acp/.env | URL для отправки результатов |
+| `WEBHOOK_SECRET` | openclaw-acp/.env, website/.env.local | Секрет для аутентификации webhook |
 
 ## Лицензия
 
