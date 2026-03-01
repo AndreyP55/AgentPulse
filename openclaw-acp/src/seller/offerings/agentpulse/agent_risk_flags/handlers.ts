@@ -89,10 +89,12 @@ export function requestPayment(requirements: any): string {
 
 export async function executeJob(requirements: any, context?: any): Promise<ExecuteJobResult> {
   console.log("[Agent Risk Flags] Starting...");
-  const agentIdOrName = requirements.agent_id || requirements.agentId;
+  const agentIdOrName = requirements.agent_id || requirements.agentId || requirements.target_agent_id || requirements.target || requirements.agent;
   const clientWallet = context?.clientAddress;
 
+  console.log(`[Agent Risk Flags] Resolving agent: input="${agentIdOrName}", clientWallet="${clientWallet}"`);
   const agentId = await resolveAgentId(agentIdOrName, clientWallet);
+  console.log(`[Agent Risk Flags] Resolved agent ID: ${agentId}`);
   if (!agentId) {
     throw new Error(
       'agent_id required. Accepted formats:\n' +

@@ -91,7 +91,7 @@ export async function resolveAgentId(
     // 2. URL containing agent ID
     const fromUrl = extractIdFromUrl(s);
     if (fromUrl) return fromUrl;
-    // 3. Agent name -> search by name (prefer agent with most activity when duplicates exist)
+    // 3. Agent name -> search by name
     try {
       const enc = encodeURIComponent(s);
       const res = await axios.get(
@@ -99,7 +99,11 @@ export async function resolveAgentId(
         AXIOS_OPTS
       );
       const agents = res.data?.data || [];
-      if (agents.length > 0) {
+      if (agents.length === 1) {
+        if (agents[0].id) return String(agents[0].id);
+      } else if (agents.length > 1) {
+        console.log(`[resolveAgentId] WARNING: ${agents.length} agents found with name "${s}": ${agents.map((a: any) => `${a.name}(id:${a.id})`).join(', ')}`);
+        console.log(`[resolveAgentId] Returning all matches — caller should use numeric ID for precision`);
         const best = agents.reduce((a: any, b: any) => {
           const aJobs = a.successfulJobCount ?? a.metrics?.successfulJobCount ?? 0;
           const bJobs = b.successfulJobCount ?? b.metrics?.successfulJobCount ?? 0;
@@ -108,6 +112,23 @@ export async function resolveAgentId(
           return (bJobs || bRev) > (aJobs || aRev) ? b : a;
         });
         if (best.id) return String(best.id);
+      }
+    } catch {
+      /* ignore */
+    }
+
+    // 3b. Fuzzy name search (contains) as fallback
+    try {
+      const enc = encodeURIComponent(s);
+      const res = await axios.get(
+        `https://acpx.virtuals.io/api/agents?filters[name][$containsi]=${enc}&pagination[pageSize]=5`,
+        AXIOS_OPTS
+      );
+      const agents = res.data?.data || [];
+      if (agents.length > 0) {
+        const exact = agents.find((a: any) => String(a.name).toLowerCase() === s.toLowerCase());
+        if (exact?.id) return String(exact.id);
+        if (agents[0].id) return String(agents[0].id);
       }
     } catch {
       /* ignore */

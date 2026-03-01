@@ -289,11 +289,13 @@ export async function executeJob(requirements: any, context?: any): Promise<Exec
   console.log('[Reputation Report] Starting comprehensive analysis...');
   console.log('[Reputation Report] Requirements:', requirements);
   
-  const agentIdOrName = requirements.agent_id || requirements.agentId;
+  const agentIdOrName = requirements.agent_id || requirements.agentId || requirements.target_agent_id || requirements.target || requirements.agent;
   const clientWallet = context?.clientAddress;
   const period = requirements.period || '30d';
   
+  console.log(`[Reputation Report] Resolving agent: input="${agentIdOrName}", clientWallet="${clientWallet}"`);
   const agentId = await resolveAgentId(agentIdOrName, clientWallet);
+  console.log(`[Reputation Report] Resolved agent ID: ${agentId}`);
   if (!agentId) {
     throw new Error(
       'agent_id required. Accepted formats:\n' +
